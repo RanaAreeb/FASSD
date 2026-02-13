@@ -128,7 +128,7 @@ export function HeroSection() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center pt-2 sm:pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center pt-2 sm:pt-4 pb-16 sm:pb-20">
             <Button
               size="lg"
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 sm:px-10 lg:px-12 py-2 sm:py-3 text-sm sm:text-base rounded-full glow-effect transition-all duration-300 hover:scale-105 font-orbitron font-semibold tracking-wider w-full sm:w-auto"
@@ -147,7 +147,7 @@ export function HeroSection() {
         </div>
       </div>
 
-      <div className="absolute bottom-4 sm:bottom-6 lg:bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+      <div className="absolute bottom-4 sm:bottom-5 lg:bottom-6 left-1/2 transform -translate-x-1/2 z-20">
         <div className="w-5 h-10 sm:w-6 sm:h-12 border-2 border-primary/60 rounded-full flex justify-center animate-pulse-border">
           <div className="w-1 h-3 sm:h-4 bg-primary rounded-full mt-1.5 sm:mt-2 animate-bounce" />
         </div>

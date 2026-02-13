@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Music, Brain, Search, Check } from "lucide-react"
 
 export function HowItWorksSection() {
   const [activeStep, setActiveStep] = useState(0)
@@ -11,25 +12,25 @@ export function HowItWorksSection() {
     {
       title: "Audio Input",
       description: "Upload or record audio files for analysis",
-      icon: "🎵",
+      icon: Music,
       detail: "Our system accepts multiple audio formats and processes them in real-time",
     },
     {
       title: "AI Analysis",
       description: "Advanced neural networks analyze audio patterns",
-      icon: "🧠",
+      icon: Brain,
       detail: "Deep learning models trained on millions of audio samples detect anomalies",
     },
     {
       title: "Pattern Recognition",
       description: "Identify synthetic audio signatures and artifacts",
-      icon: "🔍",
+      icon: Search,
       detail: "Sophisticated algorithms detect subtle inconsistencies in voice patterns",
     },
     {
       title: "Results",
       description: "Get instant verification with confidence scores",
-      icon: "✅",
+      icon: Check,
       detail: "Receive detailed reports with probability scores and evidence markers",
     },
   ]
@@ -77,11 +78,14 @@ export function HowItWorksSection() {
 
               <div className="relative z-10">
                 <div
-                  className={`text-4xl mb-4 transition-transform duration-300 ${
+                  className={`text-4xl mb-4 transition-transform duration-300 text-primary ${
                     activeStep === index ? "scale-110" : ""
                   }`}
                 >
-                  {step.icon}
+                  {(() => {
+                    const Icon = step.icon
+                    return <Icon className="w-10 h-10" strokeWidth={1.5} />
+                  })()}
                 </div>
 
                 <div className="flex items-center gap-2 mb-3">

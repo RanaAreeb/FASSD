@@ -16,7 +16,7 @@ const orbitron = Orbitron({
 })
 
 export const metadata: Metadata = {
-  title: "DeepGuard - AI Deepfake Audio Detection",
+  title: "Forensic Acoustics for Synthetic Speech Detection",
   description: "Revolutionary AI-powered technology that identifies synthetic audio with unprecedented accuracy",
   generator: "v0.app",
 }

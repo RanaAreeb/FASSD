@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Landmark, Tv, Scale, Building2 } from "lucide-react"
 
 export function UseCasesSection() {
   const [activeCase, setActiveCase] = useState(0)
@@ -16,7 +17,7 @@ export function UseCasesSection() {
       challenge: "Voice cloning attacks targeting customer service and phone banking systems",
       solution: "Real-time voice authentication and deepfake detection during calls",
       impact: "99.8% reduction in voice-based fraud attempts",
-      icon: "🏦",
+      icon: Landmark,
       color: "from-green-500 to-emerald-600",
       features: ["Real-time Call Analysis", "Voice Biometric Verification", "Fraud Alert System"],
     },
@@ -27,7 +28,7 @@ export function UseCasesSection() {
       challenge: "Deepfake audio spreading misinformation and fake news",
       solution: "Automated content verification before publication",
       impact: "100% authentic content guarantee for subscribers",
-      icon: "📺",
+      icon: Tv,
       color: "from-blue-500 to-cyan-600",
       features: ["Content Verification", "Source Authentication", "Integrity Scoring"],
     },
@@ -38,7 +39,7 @@ export function UseCasesSection() {
       challenge: "Ensuring audio evidence hasn't been manipulated or synthesized",
       solution: "Forensic-grade audio analysis and chain of custody verification",
       impact: "Court-admissible evidence verification",
-      icon: "⚖️",
+      icon: Scale,
       color: "from-purple-500 to-indigo-600",
       features: ["Forensic Analysis", "Evidence Integrity", "Expert Testimony Support"],
     },
@@ -49,7 +50,7 @@ export function UseCasesSection() {
       challenge: "CEO fraud and executive impersonation via voice cloning",
       solution: "Employee training and real-time communication verification",
       impact: "Zero successful voice impersonation attacks",
-      icon: "🏢",
+      icon: Building2,
       color: "from-orange-500 to-red-600",
       features: ["Executive Protection", "Communication Verification", "Security Training"],
     },
@@ -92,9 +93,12 @@ export function UseCasesSection() {
               >
                 <div className="flex items-start gap-4">
                   <div
-                    className={`w-16 h-16 rounded-xl bg-gradient-to-r ${useCase.color} flex items-center justify-center text-2xl shadow-lg`}
+                    className={`w-16 h-16 rounded-xl bg-gradient-to-r ${useCase.color} flex items-center justify-center text-white shadow-lg`}
                   >
-                    {useCase.icon}
+                    {(() => {
+                      const Icon = useCase.icon
+                      return <Icon className="w-8 h-8" strokeWidth={2} />
+                    })()}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
@@ -116,9 +120,12 @@ export function UseCasesSection() {
               <div className="mb-6">
                 <div className="flex items-center gap-4 mb-4">
                   <div
-                    className={`w-20 h-20 rounded-xl bg-gradient-to-r ${useCases[activeCase].color} flex items-center justify-center text-3xl shadow-lg`}
+                    className={`w-20 h-20 rounded-xl bg-gradient-to-r ${useCases[activeCase].color} flex items-center justify-center text-white shadow-lg`}
                   >
-                    {useCases[activeCase].icon}
+                    {(() => {
+                      const Icon = useCases[activeCase].icon
+                      return <Icon className="w-10 h-10" strokeWidth={2} />
+                    })()}
                   </div>
                   <div>
                     <h3 className="font-futuristic text-2xl font-bold text-primary">{useCases[activeCase].title}</h3>

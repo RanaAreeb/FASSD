@@ -2,13 +2,14 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Zap, Target, Music, Link, Lock, Globe } from "lucide-react"
 
 const features = [
   {
     title: "Real-time Detection",
     description:
       "Analyze audio streams instantly with sub-second processing times and immediate results for live applications.",
-    icon: "⚡",
+    icon: Zap,
     badge: "Fast",
     metric: "<1s",
   },
@@ -16,7 +17,7 @@ const features = [
     title: "99.9% Accuracy",
     description:
       "Industry-leading precision powered by advanced transformer models and multi-modal analysis techniques.",
-    icon: "🎯",
+    icon: Target,
     badge: "Precise",
     metric: "99.9%",
   },
@@ -24,14 +25,14 @@ const features = [
     title: "Universal Format Support",
     description:
       "Compatible with all major audio formats including MP3, WAV, FLAC, AAC, and real-time streaming protocols.",
-    icon: "🎵",
+    icon: Music,
     badge: "Compatible",
     metric: "20+ formats",
   },
   {
     title: "Enterprise API",
     description: "RESTful API with comprehensive documentation, SDKs, and enterprise-grade security and reliability.",
-    icon: "🔗",
+    icon: Link,
     badge: "Developer-Ready",
     metric: "99.9% uptime",
   },
@@ -39,7 +40,7 @@ const features = [
     title: "Privacy-First",
     description:
       "Zero-retention policy with end-to-end encryption. All processing happens securely without data storage.",
-    icon: "🔒",
+    icon: Lock,
     badge: "Secure",
     metric: "0 data stored",
   },
@@ -47,7 +48,7 @@ const features = [
     title: "Global Scale",
     description:
       "Distributed infrastructure across 15+ regions with auto-scaling to handle millions of requests per day.",
-    icon: "🌍",
+    icon: Globe,
     badge: "Scalable",
     metric: "15+ regions",
   },
@@ -76,7 +77,12 @@ export function FeaturesSection() {
             >
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between mb-6">
-                  <div className="text-4xl">{feature.icon}</div>
+                  <div className="text-4xl text-primary">
+                    {(() => {
+                      const Icon = feature.icon
+                      return <Icon className="w-10 h-10" strokeWidth={1.5} />
+                    })()}
+                  </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold text-primary mb-1">{feature.metric}</div>
                     <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">

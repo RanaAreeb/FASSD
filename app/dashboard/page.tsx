@@ -5,6 +5,7 @@ import { UploadZone } from "@/components/upload-zone"
 import { DetectionResults } from "@/components/detection-results"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Code2 } from "lucide-react"
 
 // Mock detection result for demo
 const mockResult = {
@@ -132,7 +133,7 @@ export default function DashboardPage() {
         <Card className="mt-8 glass-effect border-border/50">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <span>🐍</span>
+              <Code2 className="w-6 h-6 text-primary" strokeWidth={2} />
               <span>Backend Integration</span>
             </CardTitle>
             <CardDescription>

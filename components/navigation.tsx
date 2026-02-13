@@ -37,8 +37,8 @@ export function Navigation() {
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full animate-ping opacity-75"></div>
               </div>
               <div className="hidden sm:block">
-                <span className="text-xl lg:text-2xl font-bold text-gradient-primary tracking-tight">DeepGuard</span>
-                <div className="text-xs text-muted-foreground font-medium tracking-wider">AI DETECTION</div>
+                <span className="text-xl lg:text-2xl font-bold text-gradient-primary tracking-tight">FASSD</span>
+                <div className="text-xs text-muted-foreground font-medium tracking-wider">Forensic Acoustics</div>
               </div>
             </Link>
 

@@ -34,7 +34,7 @@ export function LoadingScreen() {
         </div>
 
         <div className="text-center">
-          <div className="loading-text">DeepGuard AI</div>
+          <div className="loading-text">FASSD</div>
           <div className="text-muted-foreground text-sm mt-2">Initializing Detection Engine...</div>
           <div className="w-64 h-1 bg-border rounded-full mt-4 overflow-hidden">
             <div

@@ -46,7 +46,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center glow-effect">
               <div className="w-6 h-6 bg-primary-foreground rounded-sm"></div>
             </div>
-            <span className="text-2xl font-bold text-gradient-primary">DeepGuard</span>
+            <span className="text-2xl font-bold text-gradient-primary">FASSD</span>
           </Link>
           <h1 className="text-4xl font-bold mb-3">{mode === "signin" ? "Welcome back" : "Get started"}</h1>
           <p className="text-muted-foreground text-lg font-light">
