@@ -1,8 +1,11 @@
 "use client"
 
 import { useState } from "react"
+import { useAuth } from "@/lib/auth-context"
+import { ProtectedRoute } from "@/components/protected-route"
 import { UploadZone } from "@/components/upload-zone"
 import { DetectionResults } from "@/components/detection-results"
+import { saveAudioAnalysis, getAttackTypeForDeepfake } from "@/lib/firestore"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Code2 } from "lucide-react"
@@ -12,6 +15,7 @@ const mockResult = {
   filename: "sample_audio.mp3",
   confidence: 94,
   isDeepfake: false,
+  attackType: "Authentic",
   processingTime: 2.3,
   fileSize: "4.2 MB",
   duration: "2:45",
@@ -24,6 +28,15 @@ const mockResult = {
 }
 
 export default function DashboardPage() {
+  return (
+    <ProtectedRoute>
+      <DashboardContent />
+    </ProtectedRoute>
+  )
+}
+
+function DashboardContent() {
+  const { user } = useAuth()
   const [isProcessing, setIsProcessing] = useState(false)
   const [result, setResult] = useState<typeof mockResult | null>(null)
   const [processingStep, setProcessingStep] = useState("")
@@ -32,7 +45,6 @@ export default function DashboardPage() {
     setIsProcessing(true)
     setResult(null)
 
-    // Simulate processing steps
     const steps = [
       "Uploading file...",
       "Extracting audio features...",
@@ -48,12 +60,33 @@ export default function DashboardPage() {
       await new Promise((resolve) => setTimeout(resolve, 800))
     }
 
-    // Set mock result with actual filename
-    setResult({
+    const isDeepfake = Math.random() > 0.6 // Demo: random result
+    const attackType = getAttackTypeForDeepfake(isDeepfake)
+    const confidence = isDeepfake ? 75 + Math.floor(Math.random() * 20) : 88 + Math.floor(Math.random() * 10)
+
+    const analysisResult = {
       ...mockResult,
       filename: file.name,
       fileSize: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-    })
+      isDeepfake,
+      attackType,
+      confidence,
+    }
+
+    if (user?.uid) {
+      await saveAudioAnalysis(user.uid, {
+        filename: analysisResult.filename,
+        fileSize: analysisResult.fileSize,
+        duration: analysisResult.duration,
+        isDeepfake: analysisResult.isDeepfake,
+        confidence: analysisResult.confidence,
+        attackType: analysisResult.attackType,
+        processingTime: analysisResult.processingTime,
+        details: analysisResult.details,
+      })
+    }
+
+    setResult(analysisResult)
     setIsProcessing(false)
     setProcessingStep("")
   }
@@ -65,7 +98,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-card to-background pt-20">
+    <div className="min-h-screen bg-gradient-to-br from-background via-card to-background pt-24">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">

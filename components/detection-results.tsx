@@ -10,6 +10,7 @@ interface DetectionResult {
   filename: string
   confidence: number
   isDeepfake: boolean
+  attackType?: string
   processingTime: number
   fileSize: string
   duration: string
@@ -57,6 +58,11 @@ export function DetectionResults({ result, onNewAnalysis }: DetectionResultsProp
             <div>
               <CardTitle className="text-2xl font-bold">Detection Complete</CardTitle>
               <CardDescription>Analysis results for {result.filename}</CardDescription>
+              {result.attackType && (
+                <Badge variant="outline" className="mt-2">
+                  Attack Type: {result.attackType}
+                </Badge>
+              )}
             </div>
             {getConfidenceBadge(result.isDeepfake, result.confidence)}
           </div>
@@ -102,7 +108,7 @@ export function DetectionResults({ result, onNewAnalysis }: DetectionResultsProp
             </div>
             <div className="text-center p-3 bg-muted/50 rounded-lg">
               <div className="text-lg font-semibold">AI Model</div>
-              <div className="text-xs text-muted-foreground">DeepGuard v2.1</div>
+              <div className="text-xs text-muted-foreground">FASSD v2.1</div>
             </div>
           </div>
         </CardContent>

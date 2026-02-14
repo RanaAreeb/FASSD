@@ -3,10 +3,17 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/lib/auth-context"
 
 export function Navigation() {
+  const { user } = useAuth()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,6 +23,8 @@ export function Navigation() {
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  const showLoggedInNav = mounted && !!user
 
   return (
     <>
@@ -61,19 +70,39 @@ export function Navigation() {
             </div>
 
             <div className="flex items-center gap-3">
-              <Link href="/signin" className="hidden sm:block">
-                <Button
-                  variant="ghost"
-                  className="text-foreground/80 hover:text-primary hover:bg-primary/5 font-medium px-6 rounded-full transition-all duration-300"
-                >
-                  Sign In
-                </Button>
-              </Link>
-              <Link href="/signup">
-                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 lg:px-8 py-2 lg:py-3 rounded-full glow-effect font-medium transition-all duration-300 hover:scale-105">
-                  Get Started
-                </Button>
-              </Link>
+              {showLoggedInNav ? (
+                <>
+                  <Link href="/dashboard" className="hidden sm:block">
+                    <Button
+                      variant="ghost"
+                      className="text-foreground/80 hover:text-primary hover:bg-primary/5 font-medium px-6 rounded-full transition-all duration-300"
+                    >
+                      Dashboard
+                    </Button>
+                  </Link>
+                  <Link href="/profile">
+                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 lg:px-8 py-2 lg:py-3 rounded-full glow-effect font-medium transition-all duration-300 hover:scale-105">
+                      Profile
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/signin" className="hidden sm:block">
+                    <Button
+                      variant="ghost"
+                      className="text-foreground/80 hover:text-primary hover:bg-primary/5 font-medium px-6 rounded-full transition-all duration-300"
+                    >
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/signup">
+                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 lg:px-8 py-2 lg:py-3 rounded-full glow-effect font-medium transition-all duration-300 hover:scale-105">
+                      Get Started
+                    </Button>
+                  </Link>
+                </>
+              )}
 
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -118,11 +147,26 @@ export function Navigation() {
                 </Link>
               ))}
               <div className="pt-4 border-t border-border/30">
-                <Link href="/signin" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full mb-2 rounded-full">
-                    Sign In
-                  </Button>
-                </Link>
+                {showLoggedInNav ? (
+                  <>
+                    <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button variant="ghost" className="w-full mb-2 rounded-full">
+                        Dashboard
+                      </Button>
+                    </Link>
+                    <Link href="/profile" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button variant="default" className="w-full rounded-full">
+                        Profile
+                      </Button>
+                    </Link>
+                  </>
+                ) : (
+                  <Link href="/signin" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full mb-2 rounded-full">
+                      Sign In
+                    </Button>
+                  </Link>
+                )}
               </div>
             </div>
           </div>

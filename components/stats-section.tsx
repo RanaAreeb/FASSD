@@ -4,6 +4,12 @@ import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
+// Deterministic pseudo-random from index - avoids hydration mismatch (Math.random differs on server vs client)
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed * 12.9898) * 43758.5453
+  return x - Math.floor(x)
+}
+
 export function StatsSection() {
   const [counters, setCounters] = useState({
     accuracy: 0,
@@ -81,10 +87,10 @@ export function StatsSection() {
             key={i}
             className="absolute w-1 h-1 bg-primary rounded-full animate-pulse"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 2}s`,
-              animationDuration: `${2 + Math.random() * 2}s`,
+              left: `${seededRandom(i) * 100}%`,
+              top: `${seededRandom(i + 100) * 100}%`,
+              animationDelay: `${seededRandom(i + 200) * 2}s`,
+              animationDuration: `${2 + seededRandom(i + 300) * 2}s`,
             }}
           />
         ))}

@@ -4,8 +4,8 @@ import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { Orbitron } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
-import { Navigation } from "@/components/navigation"
-import { LoadingScreen } from "@/components/loading-screen"
+import { AuthProvider } from "@/lib/auth-context"
+import { AppContent } from "@/components/app-content"
 import { Suspense } from "react"
 import "./globals.css"
 
@@ -29,12 +29,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${orbitron.variable} antialiased`}>
-        <LoadingScreen />
-        <Suspense fallback={<div>Loading...</div>}>
-          <Navigation />
-          {children}
-          <Analytics />
-        </Suspense>
+        <AuthProvider>
+          <Suspense fallback={<div>Loading...</div>}>
+            <AppContent>{children}</AppContent>
+            <Analytics />
+          </Suspense>
+        </AuthProvider>
       </body>
     </html>
   )
