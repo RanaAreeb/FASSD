@@ -23,7 +23,7 @@ export function ParallaxWrapper({ children, speed = 0.5, className = "" }: Paral
       element.style.transform = `translateY(${parallax}px)`
     }
 
-    window.addEventListener("scroll", handleScroll)
+    window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [speed])
 

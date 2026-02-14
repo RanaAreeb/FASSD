@@ -42,12 +42,12 @@ interface WorldProps {
 
 export function World({ globeConfig, data }: WorldProps) {
   return (
-    <div className="w-full h-full flex items-center justify-center">
-      <div className="relative">
-        {/* Simple animated globe representation */}
-        <div className="w-96 h-96 rounded-full bg-gradient-to-br from-blue-900/20 via-purple-900/20 to-cyan-900/20 border border-primary/30 animate-spin-slow">
-          <div className="absolute inset-4 rounded-full bg-gradient-to-br from-blue-800/30 via-purple-800/30 to-cyan-800/30 border border-primary/20 animate-pulse">
-            <div className="absolute inset-8 rounded-full bg-gradient-to-br from-blue-700/40 via-purple-700/40 to-cyan-700/40 border border-primary/10 animate-pulse delay-1000">
+    <div className="w-full h-full min-h-[280px] flex items-center justify-center p-4">
+      <div className="relative w-full h-full min-h-[280px] flex items-center justify-center">
+        {/* Responsive animated globe - smaller on mobile */}
+        <div className="relative w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-full bg-gradient-to-br from-blue-500/40 via-purple-500/40 to-cyan-500/40 border-2 border-primary/50 animate-spin-slow shrink-0">
+          <div className="absolute inset-3 sm:inset-4 rounded-full bg-gradient-to-br from-blue-600/50 via-purple-600/50 to-cyan-600/50 border border-primary/40 animate-pulse">
+            <div className="absolute inset-6 sm:inset-8 rounded-full bg-gradient-to-br from-blue-500/60 via-purple-500/60 to-cyan-500/60 border border-primary/30 animate-pulse">
               {/* Animated dots representing data points */}
               <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-primary rounded-full animate-ping"></div>
               <div className="absolute top-3/4 right-1/4 w-1.5 h-1.5 bg-cyan-400 rounded-full animate-ping delay-300"></div>
@@ -57,12 +57,12 @@ export function World({ globeConfig, data }: WorldProps) {
             </div>
           </div>
         </div>
-        
+
         {/* Animated connection lines */}
-        <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-24 h-px bg-gradient-to-r from-primary to-transparent animate-pulse"></div>
-          <div className="absolute top-3/4 right-1/4 w-20 h-px bg-gradient-to-l from-cyan-400 to-transparent animate-pulse delay-300"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-16 h-px bg-gradient-to-r from-blue-400 to-transparent animate-pulse delay-700"></div>
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-12 sm:w-24 h-px bg-gradient-to-r from-primary to-transparent animate-pulse"></div>
+          <div className="absolute top-3/4 right-1/4 w-10 sm:w-20 h-px bg-gradient-to-l from-cyan-400 to-transparent animate-pulse delay-300"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-8 sm:w-16 h-px bg-gradient-to-r from-blue-400 to-transparent animate-pulse delay-700"></div>
         </div>
       </div>
     </div>

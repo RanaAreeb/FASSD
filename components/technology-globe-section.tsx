@@ -3,9 +3,24 @@
 import { motion } from "motion/react";
 import dynamic from "next/dynamic";
 
-const GlobeDemo = dynamic(() => import("./globe-demo"), {
+const World = dynamic(() => import("@/components/ui/globe").then((m) => m.World), {
   ssr: false,
 });
+
+const sampleArcs = [
+  { order: 1, startLat: 28.6139, startLng: 77.209, endLat: 22.3193, endLng: 114.1694, arcAlt: 0.2, color: "#06b6d4" },
+  { order: 2, startLat: 51.5072, startLng: -0.1276, endLat: 40.7128, endLng: -74.006, arcAlt: 0.3, color: "#3b82f6" },
+  { order: 3, startLat: 35.6762, startLng: 139.6503, endLat: -33.8688, endLng: 151.2093, arcAlt: 0.3, color: "#6366f1" },
+];
+
+const globeConfig = {
+  pointSize: 4,
+  globeColor: "#062056",
+  showAtmosphere: true,
+  atmosphereAltitude: 0.1,
+  autoRotate: true,
+  autoRotateSpeed: 0.5,
+};
 
 export function TechnologyGlobeSection() {
   return (
@@ -77,8 +92,8 @@ export function TechnologyGlobeSection() {
             viewport={{ once: true }}
             className="relative"
           >
-            <div className="relative h-[500px] lg:h-[600px] rounded-3xl overflow-hidden glass-morphism border-glow">
-              <GlobeDemo />
+            <div className="relative min-h-[320px] h-[320px] sm:h-[400px] md:h-[500px] lg:h-[600px] rounded-2xl sm:rounded-3xl overflow-hidden glass-morphism border-glow touch-pan-y flex items-center justify-center">
+              <World data={sampleArcs} globeConfig={globeConfig} />
             </div>
           </motion.div>
         </div>

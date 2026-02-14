@@ -133,10 +133,17 @@
       radial-gradient(circle at 80% 20%, oklch(0.75 0.2 280 / 0.1) 0%, transparent 50%),
       radial-gradient(circle at 40% 40%, oklch(0.65 0.3 240 / 0.08) 0%, transparent 50%);
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: manipulation;
   }
   html {
-    scroll-behavior: smooth;
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    html {
+      scroll-behavior: smooth;
+    }
   }
 }
 
@@ -382,14 +389,11 @@
   }
 }
 
-/* Added smooth scrolling and parallax enhancements */
-html {
-  scroll-behavior: smooth;
-  overflow-x: hidden;
-}
-
-body {
-  overflow-x: hidden;
+/* Smooth scroll only on desktop - avoids mobile scroll lock */
+@media (hover: hover) and (pointer: fine) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 /* Added parallax-specific animations and effects */

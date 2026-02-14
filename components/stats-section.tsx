@@ -11,6 +11,7 @@ function seededRandom(seed: number): number {
 }
 
 export function StatsSection() {
+  const [mounted, setMounted] = useState(false)
   const [counters, setCounters] = useState({
     accuracy: 0,
     processed: 0,
@@ -24,6 +25,10 @@ export function StatsSection() {
     saved: 15000,
     speed: 0.3,
   }
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const duration = 2000 // 2 seconds
@@ -81,20 +86,22 @@ export function StatsSection() {
     <section className="py-24 px-4 relative overflow-hidden">
       {/* Animated Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
-      <div className="absolute inset-0 opacity-30">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-primary rounded-full animate-pulse"
-            style={{
-              left: `${seededRandom(i) * 100}%`,
-              top: `${seededRandom(i + 100) * 100}%`,
-              animationDelay: `${seededRandom(i + 200) * 2}s`,
-              animationDuration: `${2 + seededRandom(i + 300) * 2}s`,
-            }}
-          />
-        ))}
-      </div>
+      {mounted && (
+        <div className="absolute inset-0 opacity-30">
+          {[...Array(20)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1 h-1 bg-primary rounded-full animate-pulse"
+              style={{
+                left: `${seededRandom(i) * 100}%`,
+                top: `${seededRandom(i + 100) * 100}%`,
+                animationDelay: `${seededRandom(i + 200) * 2}s`,
+                animationDuration: `${2 + seededRandom(i + 300) * 2}s`,
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       <div className="container mx-auto relative z-10">
         <div className="text-center mb-16">

@@ -11,19 +11,11 @@ import { TechnologyGlobeSection } from "@/components/technology-globe-section"
 import { StatsSection } from "@/components/stats-section"
 import { UseCasesSection } from "@/components/use-cases-section"
 import { ScrollReveal } from "@/components/scroll-reveal"
-import { useEffect } from "react"
 
 export default function HomePage() {
-  useEffect(() => {
-    document.documentElement.style.scrollBehavior = "smooth"
-    return () => {
-      document.documentElement.style.scrollBehavior = "auto"
-    }
-  }, [])
-
   return (
     <ClientWrapper>
-      <main className="min-h-screen">
+      <main className="min-h-screen touch-pan-y">
         <HeroSection />
         <ScrollReveal>
           <HowItWorksSection />

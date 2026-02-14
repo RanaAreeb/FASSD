@@ -17,7 +17,7 @@ export function HeroSection() {
 
   return (
     <section
-      className="relative min-h-screen flex items-start justify-center overflow-hidden pt-20 lg:pt-24 pb-8"
+      className="relative min-h-screen flex items-start justify-center overflow-hidden pt-20 lg:pt-24 pb-8 touch-pan-y"
       style={{
         background: `
                  radial-gradient(circle at 20% 30%, oklch(0.7 0.25 260 / 0.25) 0%, transparent 60%),
