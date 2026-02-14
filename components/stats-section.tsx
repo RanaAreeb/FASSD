@@ -83,7 +83,7 @@ export function StatsSection() {
   ]
 
   return (
-    <section className="py-24 px-4 relative overflow-hidden">
+    <section id="pricing" className="py-24 px-4 relative overflow-hidden">
       {/* Animated Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
       {mounted && (

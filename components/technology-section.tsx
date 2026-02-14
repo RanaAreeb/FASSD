@@ -36,7 +36,7 @@ export function TechnologySection() {
   ]
 
   return (
-    <section className="py-24 px-4 relative overflow-hidden bg-gradient-to-br from-background via-muted/20 to-background">
+    <section id="tech" className="py-24 px-4 relative overflow-hidden bg-gradient-to-br from-background via-muted/20 to-background">
       {/* Animated Background Grid */}
       <div className="absolute inset-0 opacity-20">
         <div

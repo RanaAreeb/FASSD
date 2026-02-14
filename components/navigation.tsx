@@ -2,14 +2,26 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-context"
 
+const HOME_NAV_LINKS = [
+  { name: "Features", href: "/#features" },
+  { name: "Technology", href: "/#tech" },
+  { name: "API", href: "/#api" },
+  { name: "Pricing", href: "/#pricing" },
+]
+
 export function Navigation() {
   const { user } = useAuth()
+  const pathname = usePathname()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
+
+  const isDashboardOrProfile = pathname === "/dashboard" || pathname === "/profile"
+  const showHomeNavLinks = mounted && !isDashboardOrProfile
 
   useEffect(() => {
     setMounted(true)
@@ -51,23 +63,20 @@ export function Navigation() {
               </div>
             </Link>
 
-            <div className="hidden lg:flex items-center gap-8">
-              {[
-                { name: "Features", href: "#features" },
-                { name: "Technology", href: "#tech" },
-                { name: "API", href: "#api" },
-                { name: "Pricing", href: "#pricing" },
-              ].map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="relative text-foreground/70 hover:text-primary transition-all duration-300 font-medium group"
-                >
-                  {item.name}
-                  <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary/50 group-hover:w-full transition-all duration-300"></div>
-                </Link>
-              ))}
-            </div>
+            {showHomeNavLinks && (
+              <div className="hidden lg:flex items-center gap-8">
+                {HOME_NAV_LINKS.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className="relative text-foreground/70 hover:text-primary transition-all duration-300 font-medium group"
+                  >
+                    {item.name}
+                    <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary/50 group-hover:w-full transition-all duration-300"></div>
+                  </Link>
+                ))}
+              </div>
+            )}
 
             <div className="flex items-center gap-3">
               {showLoggedInNav ? (
@@ -131,12 +140,7 @@ export function Navigation() {
         >
           <div className="glass-morphism border-t border-border/30 mx-4 mb-4 rounded-2xl p-6">
             <div className="flex flex-col gap-4">
-              {[
-                { name: "Features", href: "#features" },
-                { name: "Technology", href: "#tech" },
-                { name: "API", href: "#api" },
-                { name: "Pricing", href: "#pricing" },
-              ].map((item) => (
+              {showHomeNavLinks && HOME_NAV_LINKS.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
