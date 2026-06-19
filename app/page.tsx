@@ -1,43 +1,28 @@
 "use client"
 
-import { HeroSection } from "@/components/hero-section"
-import { FeaturesSection } from "@/components/features-section"
-import { InteractiveDemo } from "@/components/interactive-demo"
 import { Footer } from "@/components/footer"
 import { ClientWrapper } from "@/components/client-wrapper"
-import { HowItWorksSection } from "@/components/how-it-works-section"
-import { TechnologySection } from "@/components/technology-section"
-import { TechnologyGlobeSection } from "@/components/technology-globe-section"
-import { StatsSection } from "@/components/stats-section"
-import { UseCasesSection } from "@/components/use-cases-section"
-import { ScrollReveal } from "@/components/scroll-reveal"
+import {
+  HomeHero,
+  HomeIntroSection,
+  HomeArchitectureBento,
+  HomePipelineSection,
+  HomeCapabilitiesSection,
+  HomeUseCasesSection,
+  HomeCtaSection,
+} from "@/components/home-sections"
 
 export default function HomePage() {
   return (
     <ClientWrapper>
-      <main className="min-h-screen touch-pan-y">
-        <HeroSection />
-        <ScrollReveal>
-          <HowItWorksSection />
-        </ScrollReveal>
-        <ScrollReveal delay={200}>
-          <TechnologySection />
-        </ScrollReveal>
-        <ScrollReveal delay={300}>
-          <TechnologyGlobeSection />
-        </ScrollReveal>
-        <ScrollReveal delay={400}>
-          <FeaturesSection />
-        </ScrollReveal>
-        <ScrollReveal delay={600}>
-          <StatsSection />
-        </ScrollReveal>
-        <ScrollReveal delay={800}>
-          <UseCasesSection />
-        </ScrollReveal>
-        <ScrollReveal delay={1000}>
-          <InteractiveDemo />
-        </ScrollReveal>
+      <main className="min-h-screen overflow-x-hidden bg-background">
+        <HomeHero />
+        <HomeIntroSection />
+        <HomeArchitectureBento />
+        <HomePipelineSection />
+        <HomeCapabilitiesSection />
+        <HomeUseCasesSection />
+        <HomeCtaSection />
         <Footer />
       </main>
     </ClientWrapper>

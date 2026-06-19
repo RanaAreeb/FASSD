@@ -3,14 +3,17 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { motion } from "motion/react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-context"
+import { useMotionReady } from "@/components/motion-ready-context"
+import { EASE_OUT_EXPO } from "@/lib/motion-presets"
 
 const HOME_NAV_LINKS = [
+  { name: "Architecture", href: "/#architecture" },
+  { name: "Pipeline", href: "/#pipeline" },
   { name: "Features", href: "/#features" },
-  { name: "Technology", href: "/#tech" },
-  { name: "API", href: "/#api" },
-  { name: "Pricing", href: "/#pricing" },
+  { name: "Use cases", href: "/#use-cases" },
 ]
 
 export function Navigation() {
@@ -37,10 +40,14 @@ export function Navigation() {
   }, [])
 
   const showLoggedInNav = mounted && !!user
+  const motionReady = useMotionReady()
 
   return (
     <>
-      <nav
+      <motion.nav
+        initial={{ y: -24, opacity: 0 }}
+        animate={motionReady ? { y: 0, opacity: 1 } : { y: -24, opacity: 0 }}
+        transition={{ duration: 0.55, ease: EASE_OUT_EXPO }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           isScrolled ? "glass-morphism border-b border-border/30 backdrop-blur-xl" : "bg-transparent"
         }`}
@@ -49,16 +56,12 @@ export function Navigation() {
           <div className="flex items-center justify-between h-16 lg:h-20">
             <Link href="/" className="flex items-center gap-3 group">
               <div className="relative">
-                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-primary to-primary/70 rounded-2xl flex items-center justify-center glow-effect group-hover:scale-110 transition-all duration-300">
-                  <div className="w-5 h-5 lg:w-6 lg:h-6 bg-background rounded-lg relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/40 animate-pulse"></div>
-                    <div className="absolute top-1 left-1 w-2 h-2 bg-primary rounded-full animate-bounce"></div>
-                  </div>
+                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-primary rounded-2xl flex items-center justify-center border border-primary/30 group-hover:scale-105 transition-transform duration-300">
+                  <div className="w-5 h-5 lg:w-6 lg:h-6 bg-background rounded-lg" />
                 </div>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full animate-ping opacity-75"></div>
               </div>
               <div className="hidden sm:block">
-                <span className="text-xl lg:text-2xl font-bold text-gradient-primary tracking-tight">FASSD</span>
+                <span className="text-xl lg:text-2xl font-bold font-orbitron tracking-tight text-foreground">FASSD</span>
                 <div className="text-xs text-muted-foreground font-medium tracking-wider">Forensic Acoustics</div>
               </div>
             </Link>
@@ -72,7 +75,7 @@ export function Navigation() {
                     className="relative text-foreground/70 hover:text-primary transition-all duration-300 font-medium group"
                   >
                     {item.name}
-                    <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary/50 group-hover:w-full transition-all duration-300"></div>
+                    <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
                   </Link>
                 ))}
               </div>
@@ -175,7 +178,7 @@ export function Navigation() {
             </div>
           </div>
         </div>
-      </nav>
+      </motion.nav>
     </>
   )
 }

@@ -169,7 +169,7 @@ function ProfileContent() {
                           variant={analysis.isDeepfake ? "destructive" : "secondary"}
                           className={!analysis.isDeepfake ? "bg-green-500/20 text-green-600" : ""}
                         >
-                          {analysis.isDeepfake ? "Fake" : "Real"}
+                          {analysis.isDeepfake ? "AI likely" : "Human likely"}
                         </Badge>
                         {analysis.attackType && (
                           <Badge variant="outline">{analysis.attackType}</Badge>
@@ -208,12 +208,12 @@ function ProfileContent() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-sm text-muted-foreground">Prediction</div>
+                  <div className="text-sm text-muted-foreground">File verdict</div>
                   <Badge
                     variant={selectedReport.isDeepfake ? "destructive" : "secondary"}
                     className={!selectedReport.isDeepfake ? "bg-green-500/20 text-green-600" : ""}
                   >
-                    {selectedReport.isDeepfake ? "Synthetic / Deepfake" : "Authentic"}
+                    {selectedReport.isDeepfake ? "AI likely" : "Human likely"}
                   </Badge>
                 </div>
                 <div>

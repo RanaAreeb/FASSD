@@ -1,0 +1,52 @@
+# Phase 9 Release (Experimental Forensic Prototype)
+
+This `release/` folder contains the local experimental forensic prototype.
+
+## Status
+
+- Phase 9A: skeleton — **COMPLETED**
+- Phase 9B: active model packaging — **COMPLETED**
+- Phase 9B-R: reference models (inactive) — **COMPLETED**
+- Phase 9C: live inference CLI — **SCRIPT CREATED** (P1: aligns to `feature_names_in_`)
+
+## Phase 9C CLI (manual run)
+
+From repository root, after dependencies and packaged models are in place:
+
+```bat
+cd release
+python analyze_audio_cli.py --audio sample_audio\your_file.wav --case_id demo001
+```
+
+Outputs:
+- `release/sample_outputs/<case_id>_analysis.json`
+- `release/sample_outputs/<case_id>_report.md`
+
+Options:
+- `--device auto|cpu|cuda`
+- `--debug` for step trace
+
+## FASSD platform integration
+
+The Next.js dashboard at `D:\FASSD` proxies `/api/inference/*` → this API on port **8000**.
+
+1. `cd release` → `pip install -r requirements_release.txt`
+2. `.\run_fastapi.ps1` (or `run_fastapi.bat`)
+3. In FASSD root: `npm run dev` (port 3000 or 3001)
+4. Upload audio on `/dashboard`
+
+The UI maps `voice_origin_result`, `evidence_axis_cards`, and `user_summary` into the forensic report. There is **no** conclusive REAL/FAKE score — manual review is required.
+
+## Web apps (later)
+
+- FastAPI: `run_fastapi.bat` (Phase 9D+)
+- Gradio: `run_gradio.bat` (Phase 9E+)
+
+## Safety
+
+- Active models only: origin / replay / mixer / partial_segment
+- AASIST and HybridResNet are reference-only and inactive
+- No fake_score / real_score / final fake-real decision
+- Manual review recommended
+
+Torch/transformers install may depend on local CPU/CUDA setup.

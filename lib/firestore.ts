@@ -39,7 +39,7 @@ const ATTACK_TYPES = [
 ] as const
 
 export function getAttackTypeForDeepfake(isDeepfake: boolean): string {
-  if (!isDeepfake) return "Authentic"
+  if (!isDeepfake) return "Human likely"
   return ATTACK_TYPES[Math.floor(Math.random() * (ATTACK_TYPES.length - 1))]
 }
 

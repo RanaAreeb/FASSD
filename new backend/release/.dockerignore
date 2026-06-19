@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+gradio_outputs/
+sample_outputs/
+reports/
+.env
+.env.local
+.env.production
+*.log

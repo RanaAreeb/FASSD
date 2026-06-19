@@ -1,0 +1,39 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env.production
+    environment:
+      HF_HOME: /root/.cache/huggingface
+      TRANSFORMERS_CACHE: /root/.cache/huggingface
+      HF_HUB_DISABLE_SYMLINKS_WARNING: "1"
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - hf_cache:/root/.cache/huggingface
+      - ./models:/app/release/models:ro
+      - phase9_reports:/app/reports
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    depends_on:
+      - api
+    env_file:
+      - .env.production
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../../deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+volumes:
+  hf_cache:
+  phase9_reports:
+  caddy_data:
+  caddy_config:

@@ -1,31 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { ProtectedRoute } from "@/components/protected-route"
 import { UploadZone } from "@/components/upload-zone"
 import { DetectionResults } from "@/components/detection-results"
-import { saveAudioAnalysis, getAttackTypeForDeepfake } from "@/lib/firestore"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Code2 } from "lucide-react"
-
-// Mock detection result for demo
-const mockResult = {
-  filename: "sample_audio.mp3",
-  confidence: 94,
-  isDeepfake: false,
-  attackType: "Authentic",
-  processingTime: 2.3,
-  fileSize: "4.2 MB",
-  duration: "2:45",
-  details: {
-    spectralAnalysis: 96,
-    temporalConsistency: 92,
-    neuralNetworkScore: 94,
-    artifactDetection: 89,
-  },
-}
+import { DashboardSidebar } from "@/components/dashboard-sidebar"
+import { AnalysisProcessing } from "@/components/analysis-processing"
+import { saveAudioAnalysis, getAudioHistory, type AudioAnalysis } from "@/lib/firestore"
+import { createEmptyDetectionResult, type DetectionResult } from "@/lib/detection-types"
+import { inferenceFetchErrorMessage } from "@/lib/inference-url"
+import { mapInferenceResponse } from "@/lib/inference-response-mapper"
+import { postAnalyze, readInferenceError } from "@/lib/inference-client"
+import { Radar } from "lucide-react"
 
 export default function DashboardPage() {
   return (
@@ -38,150 +25,149 @@ export default function DashboardPage() {
 function DashboardContent() {
   const { user } = useAuth()
   const [isProcessing, setIsProcessing] = useState(false)
-  const [result, setResult] = useState<typeof mockResult | null>(null)
+  const [result, setResult] = useState<DetectionResult | null>(null)
   const [processingStep, setProcessingStep] = useState("")
+  const [history, setHistory] = useState<AudioAnalysis[]>([])
+  const [historyLoading, setHistoryLoading] = useState(true)
+  const [sessionCount, setSessionCount] = useState(0)
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+  const [lastProcessingTime, setLastProcessingTime] = useState<number | undefined>()
+
+  useEffect(() => {
+    if (!user?.uid) {
+      setHistory([])
+      setHistoryLoading(false)
+      return
+    }
+    setHistoryLoading(true)
+    getAudioHistory(user.uid)
+      .then(setHistory)
+      .finally(() => setHistoryLoading(false))
+  }, [user?.uid, sessionCount])
 
   const handleFileUpload = async (file: File) => {
     setIsProcessing(true)
     setResult(null)
+    setUploadedFile(file)
 
-    const steps = [
-      "Uploading file...",
-      "Extracting audio features...",
-      "Running spectral analysis...",
-      "Checking temporal consistency...",
-      "Processing neural network...",
-      "Detecting artifacts...",
-      "Generating report...",
-    ]
+    try {
+      setProcessingStep("Sending your file for analysis…")
 
-    for (let i = 0; i < steps.length; i++) {
-      setProcessingStep(steps[i])
-      await new Promise((resolve) => setTimeout(resolve, 800))
-    }
+      const t0 = performance.now()
+      const resp = await postAnalyze(file)
+      const t1 = performance.now()
 
-    const isDeepfake = Math.random() > 0.6 // Demo: random result
-    const attackType = getAttackTypeForDeepfake(isDeepfake)
-    const confidence = isDeepfake ? 75 + Math.floor(Math.random() * 20) : 88 + Math.floor(Math.random() * 10)
+      if (!resp.ok) {
+        throw new Error(await readInferenceError(resp))
+      }
 
-    const analysisResult = {
-      ...mockResult,
-      filename: file.name,
-      fileSize: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-      isDeepfake,
-      attackType,
-      confidence,
-    }
+      setProcessingStep("Putting together your results…")
+      const data = await resp.json()
+      const processingTime =
+        typeof data?.processing_time_s === "number"
+          ? data.processing_time_s
+          : Number(((t1 - t0) / 1000).toFixed(2))
 
-    if (user?.uid) {
-      await saveAudioAnalysis(user.uid, {
-        filename: analysisResult.filename,
-        fileSize: analysisResult.fileSize,
-        duration: analysisResult.duration,
-        isDeepfake: analysisResult.isDeepfake,
-        confidence: analysisResult.confidence,
-        attackType: analysisResult.attackType,
-        processingTime: analysisResult.processingTime,
-        details: analysisResult.details,
+      const analysisResult = mapInferenceResponse(data, file, processingTime)
+
+      if (user?.uid) {
+        try {
+          await saveAudioAnalysis(user.uid, {
+            filename: analysisResult.filename,
+            fileSize: analysisResult.fileSize,
+            duration: analysisResult.duration,
+            isDeepfake: analysisResult.isDeepfake,
+            confidence: analysisResult.confidence,
+            attackType: analysisResult.attackType,
+            processingTime: analysisResult.processingTime,
+            details: analysisResult.details,
+          })
+        } catch (saveError) {
+          console.error("Failed to save analysis to Firestore:", saveError)
+        }
+      }
+
+      setSessionCount((c) => c + 1)
+      setLastProcessingTime(processingTime)
+      setResult(analysisResult)
+    } catch (e) {
+      console.error(e)
+      setResult({
+        ...createEmptyDetectionResult(),
+        filename: file.name,
+        fileSize: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+        isDeepfake: false,
+        confidence: 0,
+        attackType: "Error",
+        overallExplanation: inferenceFetchErrorMessage(e),
+        duration: "—",
+        processingTime: 0,
       })
+    } finally {
+      setIsProcessing(false)
+      setProcessingStep("")
     }
-
-    setResult(analysisResult)
-    setIsProcessing(false)
-    setProcessingStep("")
   }
 
   const handleNewAnalysis = () => {
     setResult(null)
+    setUploadedFile(null)
     setIsProcessing(false)
     setProcessingStep("")
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-card to-background pt-24">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gradient mb-4">Detection Dashboard</h1>
-          <p className="text-xl text-muted-foreground">
-            Upload audio files to detect deepfake manipulation with AI-powered analysis
+    <section className="relative min-h-screen pt-24 pb-16 overflow-hidden">
+      <div
+        className="absolute inset-0 opacity-40 pointer-events-none"
+        style={{
+          backgroundImage: `
+            linear-gradient(oklch(0.7 0.25 260 / 0.12) 1px, transparent 1px),
+            linear-gradient(90deg, oklch(0.7 0.25 260 / 0.12) 1px, transparent 1px)
+          `,
+          backgroundSize: "64px 64px",
+        }}
+      />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <header className="mb-10 animate-float-up">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-morphism border-glow mb-4">
+            <Radar className="w-3.5 h-3.5 text-primary animate-pulse" />
+            <span className="text-xs font-medium tracking-widest uppercase text-muted-foreground">
+              Voice integrity lab
+            </span>
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-gradient-primary leading-tight">
+            Understand your audio in seconds
+          </h1>
+          <p className="mt-3 text-muted-foreground max-w-2xl text-sm sm:text-base leading-relaxed">
+            Upload a recording and we run four focused checks — voice source, replay signs, channel effects, and
+            edited segments — then show you a clear waveform with anything worth replaying marked on the timeline.
           </p>
+        </header>
+
+        <div className="grid lg:grid-cols-12 gap-8 items-start">
+          <aside className="lg:col-span-4 order-2 lg:order-1">
+            <DashboardSidebar
+              history={history}
+              historyLoading={historyLoading}
+              sessionCount={sessionCount}
+              lastProcessingTime={lastProcessingTime}
+            />
+          </aside>
+
+          <main className="lg:col-span-8 space-y-6 order-1 lg:order-2">
+            {!result && !isProcessing && <UploadZone onFileUpload={handleFileUpload} isProcessing={isProcessing} />}
+            {isProcessing && (
+              <AnalysisProcessing stepLabel={processingStep || "Processing…"} audioFile={uploadedFile} />
+            )}
+            {result && (
+              <DetectionResults result={result} audioFile={uploadedFile} onNewAnalysis={handleNewAnalysis} />
+            )}
+          </main>
         </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="glass-effect border-border/50">
-            <CardHeader className="pb-2">
-              <CardDescription>Files Analyzed</CardDescription>
-              <CardTitle className="text-2xl">1,247</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card className="glass-effect border-border/50">
-            <CardHeader className="pb-2">
-              <CardDescription>Deepfakes Detected</CardDescription>
-              <CardTitle className="text-2xl text-red-500">89</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card className="glass-effect border-border/50">
-            <CardHeader className="pb-2">
-              <CardDescription>Accuracy Rate</CardDescription>
-              <CardTitle className="text-2xl text-green-500">99.7%</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card className="glass-effect border-border/50">
-            <CardHeader className="pb-2">
-              <CardDescription>Processing Time</CardDescription>
-              <CardTitle className="text-2xl">2.1s</CardTitle>
-            </CardHeader>
-          </Card>
-        </div>
-
-        {/* Main Content */}
-        <div className="space-y-8">
-          {!result && !isProcessing && <UploadZone onFileUpload={handleFileUpload} isProcessing={isProcessing} />}
-
-          {isProcessing && (
-            <Card className="glass-effect border-border/50 shadow-glow">
-              <CardContent className="p-8">
-                <div className="text-center space-y-6">
-                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-semibold">Processing Audio</h3>
-                    <p className="text-muted-foreground">{processingStep}</p>
-                  </div>
-                  <Badge variant="secondary" className="bg-primary/10 text-primary">
-                    AI Analysis in Progress
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {result && <DetectionResults result={result} onNewAnalysis={handleNewAnalysis} />}
-        </div>
-
-        {/* Python Backend Integration Note */}
-        <Card className="mt-8 glass-effect border-border/50">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Code2 className="w-6 h-6 text-primary" strokeWidth={2} />
-              <span>Backend Integration</span>
-            </CardTitle>
-            <CardDescription>
-              This frontend is ready for Python backend integration for actual deepfake detection processing
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="bg-muted/50 rounded-lg p-4 font-mono text-sm">
-              <div className="text-muted-foreground mb-2"># Python API Endpoint Structure</div>
-              <div>POST /api/analyze-audio</div>
-              <div className="text-muted-foreground"># Upload audio file and receive detection results</div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
-    </div>
+    </section>
   )
 }

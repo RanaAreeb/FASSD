@@ -1,27 +1,146 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
+# --- Dependencies ---
+node_modules/
+**/node_modules/
 
-# next.js
+# --- Next.js / frontend build ---
 /.next/
 /out/
-
-# production
 /build
+dist/
 
-# debug
+# --- Environment & secrets (keep examples) ---
+.env
+.env.*
+!.env.example
+!**/.env.example
+!**/.env.production.example
+*.pem
+*.key
+credentials.json
+serviceAccount*.json
+firebase-adminsdk*.json
+
+# --- Vercel ---
+.vercel
+
+# --- TypeScript ---
+*.tsbuildinfo
+next-env.d.ts
+
+# --- Logs & debug ---
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
 
-# env files
-.env*
+# --- Python ---
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+dist/
+build/
+*.egg
 
-# vercel
-.vercel
+# Virtual environments (anywhere in repo)
+.venv/
+**/.venv/
+venv/
+**/venv/
+env/
+**/env/
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# --- IDE / editor / OS ---
+.cursor/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- ML model artifacts (large; upload to server separately) ---
+*.joblib
+*.pth
+*.pt
+*.onnx
+*.h5
+*.safetensors
+*.ckpt
+*.bin
+**/models/**/backup_*/
+
+# TorchScript only (do not use *.ts — that would ignore TypeScript)
+**/*.torchscript
+**/models/**/*.ts
+
+# --- Hugging Face / model caches ---
+.cache/
+**/.cache/
+.huggingface/
+
+# --- Generated reports & demo outputs ---
+**/gradio_outputs/
+**/sample_outputs/
+reports/
+**/reports/phase9/app/sample_outputs/
+
+# --- Legacy / local-only copies (active app: new backend/release/ + root Next.js) ---
+FYP_FASSD-main/
+inference_api/
+model/
+
+# Legacy synthetic-audio bundles from old Hybrid ResNet pipeline
+synthetic_fake/
+**/synthetic_fake/
+
+# --- Large datasets & audio samples ---
+Samples/
+testing_audios/
+**/testing_audios/
+DataSet/
+**/DataSet/
+data/raw/
+data/features/
+data/noise_rir/
+data/manifests/
+data/realworld/
+*.mp3
+*.wav
+*.m4a
+*.flac
+*.aac
+*.ogg
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+
+# --- Temporary / upload scratch ---
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Archive / backup dumps (e.g. accidental .zip at repo root)
+.zip
+*.zip
+*.7z
+*.tar.gz
+*.rar
