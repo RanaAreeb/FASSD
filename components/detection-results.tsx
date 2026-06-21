@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button"
 import { AudioWaveformDisplay } from "@/components/audio-waveform-display"
 import { cn } from "@/lib/utils"
 import type { DetectionResult, EvidenceAxisCard } from "@/lib/detection-types"
+import { downloadAnalysisReport } from "@/lib/inference-client"
 import { FILE_VERDICT_LABELS, fileVerdictTag } from "@/lib/verdict-labels"
-import { History, RotateCcw, XCircle } from "lucide-react"
+import { History, FileDown, FileJson, RotateCcw, XCircle } from "lucide-react"
+import { useState } from "react"
 
 interface DetectionResultsProps {
   result: DetectionResult
@@ -62,6 +64,8 @@ function Phase9DetectionResults({
   onNewAnalysis,
 }: DetectionResultsProps) {
   const p9 = result.phase9!
+  const [reportError, setReportError] = useState<string | null>(null)
+  const [downloading, setDownloading] = useState<"pdf" | "json" | null>(null)
   const severity = p9.severityLevel ?? "clear"
   const highlights = p9.segmentHighlights?.map((s) => ({
     startSec: s.startSec,
@@ -71,6 +75,26 @@ function Phase9DetectionResults({
   }))
   const durationLabel =
     typeof p9.durationSec === "number" ? `${p9.durationSec.toFixed(1)} s` : result.duration
+
+  const handleDownload = async (kind: "pdf" | "json") => {
+    const caseId = p9.reports?.caseId ?? p9.caseId
+    if (!caseId) {
+      setReportError("Report is not ready yet — case ID missing.")
+      return
+    }
+    setReportError(null)
+    setDownloading(kind)
+    try {
+      await downloadAnalysisReport(caseId, kind)
+    } catch (err) {
+      setReportError(err instanceof Error ? err.message : "Could not download report.")
+    } finally {
+      setDownloading(null)
+    }
+  }
+
+  const canDownloadPdf = p9.reports?.pdfAvailable
+  const canDownloadJson = p9.reports?.jsonAvailable
 
   return (
     <div className="space-y-5 animate-float-up">
@@ -168,6 +192,37 @@ function Phase9DetectionResults({
 
       {p9.safetyWording && (
         <p className="text-xs text-muted-foreground/80 leading-relaxed px-1">{p9.safetyWording}</p>
+      )}
+
+      {(canDownloadPdf || canDownloadJson) && (
+        <div className="flex flex-col sm:flex-row gap-3">
+          {canDownloadPdf && (
+            <Button
+              variant="outline"
+              className="flex-1"
+              disabled={!!downloading}
+              onClick={() => handleDownload("pdf")}
+            >
+              <FileDown className="w-4 h-4 mr-2" />
+              {downloading === "pdf" ? "Preparing PDF…" : "Download PDF report"}
+            </Button>
+          )}
+          {canDownloadJson && (
+            <Button
+              variant="outline"
+              className="flex-1"
+              disabled={!!downloading}
+              onClick={() => handleDownload("json")}
+            >
+              <FileJson className="w-4 h-4 mr-2" />
+              {downloading === "json" ? "Preparing JSON…" : "Download JSON report"}
+            </Button>
+          )}
+        </div>
+      )}
+
+      {reportError && (
+        <p className="text-sm text-red-300/90 leading-relaxed px-1">{reportError}</p>
       )}
 
       <ActionButtons onNewAnalysis={onNewAnalysis} />

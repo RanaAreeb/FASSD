@@ -74,6 +74,14 @@ export type Phase9AnalyzeResponse = {
   }
   safety?: { wording?: string }
   manual_review_required?: boolean
+  saved_report_path?: string
+  pdf_report_path?: string
+  pdf_report_error?: string
+  reports?: {
+    case_id?: string
+    json_available?: boolean
+    pdf_available?: boolean
+  }
   phase9c_report?: {
     origin_evidence?: { probability?: number }
     replay_evidence?: { probability?: number }
@@ -207,6 +215,19 @@ export function mapPhase9Response(
     safetyWording: data.safety?.wording,
     segmentRows,
     segmentHighlights,
+    reports: data.reports
+      ? {
+          caseId: data.reports.case_id ?? data.case_id ?? "",
+          jsonAvailable: data.reports.json_available === true || !!data.saved_report_path,
+          pdfAvailable: data.reports.pdf_available === true || !!data.pdf_report_path,
+        }
+      : data.case_id
+        ? {
+            caseId: data.case_id,
+            jsonAvailable: !!data.saved_report_path,
+            pdfAvailable: !!data.pdf_report_path,
+          }
+        : undefined,
   }
 
   const envReasons: string[] = []

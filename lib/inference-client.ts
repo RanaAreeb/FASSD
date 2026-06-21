@@ -1,13 +1,22 @@
 import { getInferenceBase } from "@/lib/inference-url"
+import { auth } from "@/lib/firebase"
 
 const INFERENCE_TIMEOUT_MS = 10 * 60 * 1000
 
 export async function postAnalyze(file: File): Promise<Response> {
   const form = new FormData()
   form.append("file", file)
-  return fetch(`${getInferenceBase()}/analyze`, {
+
+  const headers: HeadersInit = {}
+  const user = auth?.currentUser
+  if (user) {
+    headers.Authorization = `Bearer ${await user.getIdToken()}`
+  }
+
+  return fetch(`${getInferenceBase()}/analyze-audio`, {
     method: "POST",
     body: form,
+    headers,
     signal: AbortSignal.timeout(INFERENCE_TIMEOUT_MS),
   })
 }
@@ -25,7 +34,9 @@ export async function readInferenceError(resp: Response): Promise<string> {
       "and ensure CORS_ALLOW_ORIGINS on the backend includes your site domain.",
     ].join(" ")
   }
-  if (!raw) return `Inference request failed (${resp.status})`
+  if (resp.status === 401) {
+    return "You must be signed in to run analysis. Please sign in and try again."
+  }
   try {
     const data = JSON.parse(raw) as {
       error_message?: string
@@ -41,4 +52,35 @@ export async function readInferenceError(resp: Response): Promise<string> {
   }
   if (raw.length > 500) return `Inference request failed (${resp.status})`
   return raw
+}
+
+export async function downloadAnalysisReport(caseId: string, kind: "pdf" | "json"): Promise<void> {
+  const user = auth?.currentUser
+  if (!user) {
+    throw new Error("You must be signed in to download reports.")
+  }
+
+  const headers: HeadersInit = {
+    Authorization: `Bearer ${await user.getIdToken()}`,
+  }
+
+  const response = await fetch(
+    `${getInferenceBase()}/reports/${encodeURIComponent(caseId)}/${kind}`,
+    { headers, signal: AbortSignal.timeout(INFERENCE_TIMEOUT_MS) },
+  )
+
+  if (!response.ok) {
+    throw new Error(await readInferenceError(response))
+  }
+
+  const blob = await response.blob()
+  const url = URL.createObjectURL(blob)
+  const extension = kind === "pdf" ? (blob.type.includes("html") ? "html" : "pdf") : "json"
+  const anchor = document.createElement("a")
+  anchor.href = url
+  anchor.download = `${caseId}_report.${extension}`
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  URL.revokeObjectURL(url)
 }

@@ -97,7 +97,7 @@ export function Navigation() {
                       Dashboard
                     </Button>
                   </Link>
-                  <Link href="/profile">
+                  <Link href="/profile" className="hidden lg:block">
                     <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 lg:px-8 py-2 lg:py-3 rounded-full glow-effect font-medium transition-all duration-300 hover:scale-105">
                       Profile
                     </Button>

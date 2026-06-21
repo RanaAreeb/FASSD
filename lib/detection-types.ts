@@ -34,6 +34,11 @@ export interface Phase9ResultView {
     probability?: number
     label: string
   }>
+  reports?: {
+    caseId: string
+    jsonAvailable: boolean
+    pdfAvailable: boolean
+  }
 }
 
 export interface DetectionResult {

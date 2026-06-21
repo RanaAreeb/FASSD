@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import shutil
 import warnings
 
 warnings.filterwarnings(
@@ -10,14 +9,23 @@ warnings.filterwarnings(
     message=r"Support for mismatched key_padding_mask and attn_mask is deprecated.*",
     category=UserWarning,
 )
-import tempfile
 from pathlib import Path
 from typing import Any
 
 import os
 
-from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+
+from src.security import (
+    analysis_reports_enabled,
+    production_report_flags_enabled,
+    require_inference_auth,
+    stream_upload_to_temp,
+    validate_upload_filename,
+)
+from src.report_paths import resolve_json_report, resolve_pdf_report, sanitize_case_id
 
 from src.app_report_formatting import (
     APP_NAME,
@@ -54,8 +62,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins if _cors_origins != ["*"] else ["*"],
     allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-API-Key"],
 )
 
 
@@ -122,7 +130,7 @@ def root() -> dict[str, Any]:
         "phase": APP_PHASE,
         "status": "experimental_forensic_demo",
         "message": "Phase 9C/9E release forensic prototype API",
-        "endpoints": ["/", "/health", "/model-info", "/analyze-audio", "/analyze"],
+        "endpoints": ["/", "/health", "/model-info", "/analyze-audio", "/analyze", "/reports/{case_id}/pdf", "/reports/{case_id}/json"],
         "safety": safety_banner(),
         "primary_app_path": "release/",
     }
@@ -177,6 +185,96 @@ def model_info() -> dict[str, Any]:
     }
 
 
+def _should_generate_reports(
+    *,
+    save_report: bool,
+    generate_report: bool,
+    generate_visual: bool,
+) -> bool:
+    if save_report or generate_report or generate_visual:
+        return production_report_flags_enabled()
+    return analysis_reports_enabled()
+
+
+def _attach_analysis_reports(
+    payload: dict[str, Any],
+    *,
+    phase9c: dict[str, Any],
+    file_label: str,
+    tmp_path: Path,
+    return_top_segments: bool,
+) -> None:
+    if payload.get("processing_status") == "error":
+        return
+
+    enriched = enrich_phase9c_response(
+        phase9c,
+        file_name=file_label,
+        return_top_segments=return_top_segments,
+    )
+
+    json_dir = repo_root() / "reports" / "phase9" / "app" / "sample_outputs" / "json"
+    json_dir.mkdir(parents=True, exist_ok=True)
+    save_path = save_json_report(enriched, output_dir=json_dir)
+    payload["saved_report_path"] = save_path
+
+    waveform_path: str | None = None
+    try:
+        from src.app_visualization import generate_waveform_highlight
+
+        waveform_path = generate_waveform_highlight(str(tmp_path), enriched)
+        payload["waveform_image_path"] = waveform_path
+    except Exception as exc:
+        payload["waveform_image_path"] = None
+        payload["waveform_error"] = str(exc)
+
+    try:
+        from src.pdf_report_generator import generate_pdf_report
+
+        payload["pdf_report_path"] = generate_pdf_report(
+            enriched, waveform_image_path=waveform_path
+        )
+    except Exception as exc:
+        payload["pdf_report_path"] = None
+        payload["pdf_report_error"] = str(exc)
+
+    case_id = str(payload.get("case_id") or phase9c.get("case_id") or "")
+    payload["reports"] = {
+        "case_id": case_id,
+        "json_available": bool(payload.get("saved_report_path")),
+        "pdf_available": bool(payload.get("pdf_report_path")),
+    }
+
+
+@app.get("/reports/{case_id}/pdf")
+async def download_pdf_report(
+    case_id: str,
+    _auth: None = Depends(require_inference_auth),
+) -> FileResponse:
+    try:
+        path = resolve_pdf_report(case_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if not path:
+        raise HTTPException(status_code=404, detail="PDF report not found for this case.")
+    media = "application/pdf" if path.suffix.lower() == ".pdf" else "text/html"
+    return FileResponse(path, media_type=media, filename=f"{sanitize_case_id(case_id)}_report{path.suffix}")
+
+
+@app.get("/reports/{case_id}/json")
+async def download_json_report(
+    case_id: str,
+    _auth: None = Depends(require_inference_auth),
+) -> FileResponse:
+    try:
+        path = resolve_json_report(case_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if not path:
+        raise HTTPException(status_code=404, detail="JSON report not found for this case.")
+    return FileResponse(path, media_type="application/json", filename=f"{sanitize_case_id(case_id)}_analysis.json")
+
+
 @app.post("/analyze-audio")
 async def analyze_audio(
     audio_file: UploadFile | None = File(default=None),
@@ -186,6 +284,7 @@ async def analyze_audio(
     save_report: bool = Query(default=False),
     generate_report: bool = Query(default=False),
     generate_visual: bool = Query(default=False),
+    _auth: None = Depends(require_inference_auth),
 ) -> dict[str, Any]:
     _ensure_models_checked()
     upload = _resolve_upload(audio_file, file)
@@ -214,70 +313,46 @@ async def analyze_audio(
             "safety": safety_banner(),
         }
 
-    suffix = Path(upload.filename or "upload.wav").suffix or ".wav"
-    tmp_path: Path | None = None
-    output_dir = None
-    save_path = None
-    if save_report:
-        output_dir = repo_root() / "reports" / "phase9" / "app" / "sample_outputs"
-        output_dir.mkdir(parents=True, exist_ok=True)
+    suffix = validate_upload_filename(upload.filename)
+    if case_id and len(case_id) > 128:
+        raise HTTPException(status_code=400, detail="case_id is too long.")
 
+    reports_enabled = _should_generate_reports(
+        save_report=save_report,
+        generate_report=generate_report,
+        generate_visual=generate_visual,
+    )
+
+    tmp_path: Path | None = None
     file_label = upload.filename or "upload"
     payload: dict[str, Any]
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-            shutil.copyfileobj(upload.file, tmp)
-            tmp_path = Path(tmp.name)
+        tmp_path = await stream_upload_to_temp(upload, suffix)
         file_label = upload.filename or tmp_path.name
 
         phase9c = analyze_audio_file(
             audio_path=str(tmp_path),
             case_id=case_id,
-            output_dir=output_dir,
+            output_dir=None,
             device="auto",
             return_debug=return_top_segments,
         )
-        if save_report and output_dir and phase9c.get("case_id"):
-            save_path = str(output_dir / f"{phase9c['case_id']}_analysis.json")
 
         payload = build_api_analyze_response(
             file_name=file_label,
             phase9c_result=phase9c,
             return_top_segments=return_top_segments,
-            save_report_path=save_path,
+            save_report_path=None,
         )
 
-        if generate_report or save_report or generate_visual:
-            enriched = enrich_phase9c_response(
-                phase9c,
-                file_name=file_label,
+        if reports_enabled:
+            _attach_analysis_reports(
+                payload,
+                phase9c=phase9c,
+                file_label=file_label,
+                tmp_path=tmp_path,
                 return_top_segments=return_top_segments,
             )
-            if save_report and not save_path:
-                save_path = save_json_report(enriched)
-                payload["saved_report_path"] = save_path
-
-            waveform_path: str | None = None
-            if generate_visual:
-                try:
-                    from src.app_visualization import generate_waveform_highlight
-
-                    waveform_path = generate_waveform_highlight(str(tmp_path), enriched)
-                    payload["waveform_image_path"] = waveform_path
-                except Exception as exc:
-                    payload["waveform_image_path"] = None
-                    payload["waveform_error"] = str(exc)
-
-            if generate_report:
-                try:
-                    from src.pdf_report_generator import generate_pdf_report
-
-                    payload["pdf_report_path"] = generate_pdf_report(
-                        enriched, waveform_image_path=waveform_path
-                    )
-                except Exception as exc:
-                    payload["pdf_report_path"] = None
-                    payload["pdf_report_error"] = str(exc)
     except Exception as exc:
         payload = {
             "processing_status": "error",
@@ -302,5 +377,6 @@ async def analyze_legacy(
     audio_file: UploadFile | None = File(default=None),
     file: UploadFile | None = File(default=None),
     case_id: str | None = Form(default=None),
+    _auth: None = Depends(require_inference_auth),
 ) -> dict[str, Any]:
     return await analyze_audio(audio_file=audio_file, file=file, case_id=case_id)

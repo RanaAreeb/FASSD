@@ -5,6 +5,7 @@ import { useCallback, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { AudioLines, FileUp, Shield } from "lucide-react"
+import { validateAudioFile } from "@/lib/upload-limits"
 
 interface UploadZoneProps {
   onFileUpload: (file: File) => void
@@ -16,9 +17,17 @@ const FORMATS = ["WAV", "MP3", "FLAC", "M4A", "OGG"]
 export function UploadZone({ onFileUpload, isProcessing }: UploadZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false)
   const [selectedName, setSelectedName] = useState<string | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
 
   const handleFile = useCallback(
     (file: File) => {
+      const validationError = validateAudioFile(file)
+      if (validationError) {
+        setUploadError(validationError)
+        setSelectedName(null)
+        return
+      }
+      setUploadError(null)
       setSelectedName(file.name)
       onFileUpload(file)
     },
@@ -128,6 +137,10 @@ export function UploadZone({ onFileUpload, isProcessing }: UploadZoneProps) {
 
         {selectedName && !isProcessing && (
           <p className="text-xs font-mono text-primary/80 truncate max-w-sm mx-auto">Queued: {selectedName}</p>
+        )}
+
+        {uploadError && (
+          <p className="text-xs text-red-300/90 max-w-md mx-auto leading-relaxed">{uploadError}</p>
         )}
       </div>
     </div>
