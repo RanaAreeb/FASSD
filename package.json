@@ -1,5 +1,5 @@
 {
-  "name": "forensic-acoustics-synthetic-speech-detection",
+  "name": "deepfakedetection",
   "version": "0.1.0",
   "private": true,
   "engines": {

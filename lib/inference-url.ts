@@ -11,12 +11,23 @@ export function getInferenceBase(): string {
 
 export function inferenceFetchErrorMessage(err: unknown): string {
   const msg = err instanceof Error ? err.message : String(err)
+  if (
+    msg.includes("FUNCTION_PAYLOAD_TOO_LARGE") ||
+    msg.includes("Request Entity Too Large") ||
+    msg.includes("413")
+  ) {
+    return [
+      "This audio file is too large for the Vercel upload proxy (about 4.5 MB max).",
+      "Set INFERENCE_PROXY_TARGET on Vercel to your DigitalOcean API URL, redeploy,",
+      "and ensure CORS_ALLOW_ORIGINS on the backend includes your site domain.",
+    ].join(" ")
+  }
   if (msg === "Failed to fetch" || msg.includes("NetworkError") || msg.includes("Load failed")) {
     return [
       "Cannot reach the inference API.",
-      "1) In new backend/release: activate .venv, pip install -r requirements_release.txt, run .\\run_fastapi.ps1 (port 8000).",
-      "2) Restart npm run dev after changing next.config or .env.",
-      "3) Or set NEXT_PUBLIC_INFERENCE_URL=http://localhost:8000 and add your frontend origin to CORS_ALLOW_ORIGINS (e.g. http://localhost:3001).",
+      "1) Confirm the DigitalOcean API is running and /health returns ready_for_analyze: true.",
+      "2) On Vercel, set INFERENCE_PROXY_TARGET=https://api.yourdomain.com and redeploy.",
+      "3) On the backend, set CORS_ALLOW_ORIGINS to your frontend domain (e.g. https://www.deepfakedetection.dev).",
     ].join(" ")
   }
   return msg || "Unexpected error"

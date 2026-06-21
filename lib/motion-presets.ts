@@ -59,4 +59,63 @@ export const timelineStep = {
   visible: { opacity: 1, x: 0 },
 }
 
+export const pipelineStepContainer = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.14,
+      delayChildren: 0.08,
+    },
+  },
+}
+
+export const pipelineNode = {
+  hidden: { scale: 0.55, opacity: 0 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 320, damping: 22 },
+  },
+}
+
+export const pipelineContent = {
+  hidden: { opacity: 0, y: 22, x: 12, filter: "blur(6px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    x: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.65, ease: EASE_OUT_EXPO },
+  },
+}
+
+export const pipelineConnector = {
+  hidden: { scaleY: 0, opacity: 0 },
+  visible: {
+    scaleY: 1,
+    opacity: 1,
+    transition: { duration: 0.55, ease: EASE_OUT_EXPO },
+  },
+}
+
+export const pipelineAsideItem = {
+  hidden: { opacity: 0, x: -28, filter: "blur(4px)" },
+  visible: {
+    opacity: 1,
+    x: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.7, ease: EASE_OUT_EXPO },
+  },
+}
+
+export const pipelineAsideContainer = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.05,
+    },
+  },
+}
+
 export const reducedMotionTransition = { duration: 0.01 }

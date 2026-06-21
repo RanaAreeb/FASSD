@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { PROJECT } from "@/lib/project-facts"
 
 export function LoadingScreen() {
   const [isVisible, setIsVisible] = useState(true)
@@ -34,7 +35,7 @@ export function LoadingScreen() {
         </div>
 
         <div className="text-center">
-          <div className="loading-text">FASSD</div>
+          <div className="loading-text">{PROJECT.name}</div>
           <div className="text-muted-foreground text-sm mt-2">Initializing Detection Engine...</div>
           <div className="w-64 h-1 bg-border rounded-full mt-4 overflow-hidden">
             <div

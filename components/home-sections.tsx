@@ -6,15 +6,16 @@ import { motion, useReducedMotion } from "motion/react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { AudioVisualizer } from "@/components/audio-visualizer"
+import { PipelineTimeline } from "@/components/pipeline-timeline"
 import { HeroReveal, Reveal, RevealItem, RevealStagger } from "@/components/motion-reveal"
 import { useMotionReady } from "@/components/motion-ready-context"
-import { fadeIn, fadeUp, heroPanel, heroTitle, timelineStep, EASE_OUT_EXPO } from "@/lib/motion-presets"
+import { fadeIn, fadeUp, heroPanel, heroTitle, EASE_OUT_EXPO, pipelineAsideContainer, pipelineAsideItem, reducedMotionTransition } from "@/lib/motion-presets"
 import { cn } from "@/lib/utils"
 import {
   CAPABILITIES,
   INFERENCE_DEFAULTS,
+  BENTO_SMALL_TILES,
   MODEL_SPECS,
-  PIPELINE_STEPS,
   PROJECT,
   USE_CASES,
   VALIDATION_NOTE,
@@ -86,7 +87,7 @@ export function HomeHero() {
       />
       <HeroReveal delay={0.7} variants={fadeIn}>
         <div className="absolute top-48 right-8 text-[10px] font-mono text-muted-foreground/50 rotate-90 origin-right hidden lg:block tracking-widest">
-          16 KHZ · MONO · HYBRID RESNET
+          16 KHZ · MONO · PHASE 9
         </div>
       </HeroReveal>
 
@@ -104,10 +105,10 @@ export function HomeHero() {
 
             <h1 className="font-orbitron font-black leading-[0.92] tracking-tight">
               <HeroReveal delay={0.12} variants={heroTitle}>
-                <span className="block text-5xl sm:text-6xl md:text-7xl xl:text-8xl text-foreground">Forensic</span>
+                <span className="block text-5xl sm:text-6xl md:text-7xl xl:text-8xl text-foreground">DeepFake</span>
               </HeroReveal>
               <HeroReveal delay={0.22} variants={heroTitle}>
-                <span className="block text-5xl sm:text-6xl md:text-7xl xl:text-8xl text-primary">Acoustics</span>
+                <span className="block text-5xl sm:text-6xl md:text-7xl xl:text-8xl text-primary">Detection</span>
               </HeroReveal>
             </h1>
 
@@ -243,18 +244,19 @@ export function HomeArchitectureBento() {
           <SectionLabel>Architecture</SectionLabel>
           <h2 className="text-3xl sm:text-4xl font-orbitron font-bold">Model & inference at a glance</h2>
           <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
-            One bento overview — every value is from your FYP codebase and API defaults.
+            Values match the Phase 9 release backend — model registry, segmentation defaults, and candidate
+            thresholds.
           </p>
         </Reveal>
 
         <RevealStagger
-          className="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4 auto-rows-[minmax(110px,auto)]"
+          className="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4 auto-rows-fr"
           stagger={0.07}
         >
-          <RevealItem className="col-span-2 lg:col-span-3 lg:row-span-2 rounded-3xl border border-border/60 bg-card p-6 sm:p-8 flex flex-col justify-between min-h-[260px]">
-            <div>
+          <RevealItem className="col-span-2 lg:col-span-3 lg:row-span-2 rounded-3xl border border-border/60 bg-card p-6 sm:p-8 flex flex-col">
+            <div className="flex-1">
               <Badge variant="outline" className="mb-4 font-mono text-[10px]">
-                Phase 9 release
+                Phase 9B · experimental
               </Badge>
               <h3 className="text-2xl sm:text-3xl font-orbitron font-bold leading-snug">
                 Four experimental evidence models
@@ -267,13 +269,16 @@ export function HomeArchitectureBento() {
             <p className="text-xs font-mono text-primary mt-6">release/models/ · joblib + metadata</p>
           </RevealItem>
 
-          {MODEL_SPECS.slice(1, 5).map((spec) => (
+          {BENTO_SMALL_TILES.map((tile) => (
             <RevealItem
-              key={spec.label}
-              className="col-span-1 rounded-2xl border border-border/60 bg-card p-4 sm:p-5 flex flex-col justify-end min-h-[110px]"
+              key={tile.key}
+              className="col-span-1 rounded-2xl border border-border/60 bg-card p-4 sm:p-5 flex flex-col h-full"
             >
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{spec.label}</p>
-              <p className="text-sm font-mono font-semibold mt-2 leading-snug">{spec.value}</p>
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground leading-tight">{tile.label}</p>
+                <span className="text-[9px] font-mono text-primary/80 shrink-0">{tile.meta}</span>
+              </div>
+              <p className="text-sm font-mono font-semibold leading-snug flex-1">{tile.value}</p>
             </RevealItem>
           ))}
 
@@ -290,7 +295,9 @@ export function HomeArchitectureBento() {
           </RevealItem>
 
           <RevealItem className="col-span-2 lg:col-span-3 rounded-2xl border border-border/60 bg-card p-5 sm:p-6">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Validation (internal)</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+              Validation · Phase 9C / 9D
+            </p>
             <p className="text-sm text-muted-foreground leading-relaxed">{VALIDATION_NOTE}</p>
           </RevealItem>
         </RevealStagger>
@@ -303,56 +310,47 @@ export function HomeArchitectureBento() {
    PIPELINE — vertical timeline (not bento)
    ═══════════════════════════════════════════════════════════ */
 export function HomePipelineSection() {
+  const reduceMotion = useReducedMotion()
+
   return (
-    <section id="pipeline" className="py-20 sm:py-28">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="pipeline" className="relative py-20 sm:py-28 overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_70%_40%,oklch(0.65_0.25_260/0.06),transparent)]" />
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-12 gap-12 lg:gap-16">
-          <Reveal direction="left" className="lg:col-span-4 lg:sticky lg:top-28 lg:self-start">
-            <SectionLabel>Pipeline</SectionLabel>
-            <h2 className="text-3xl sm:text-4xl font-orbitron font-bold leading-tight">Five stages per upload</h2>
-            <p className="text-muted-foreground mt-4 text-sm leading-relaxed">
+          <motion.aside
+            className="lg:col-span-4 lg:sticky lg:top-28 lg:self-start"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-10% 0px -8% 0px", amount: 0.35 }}
+            variants={pipelineAsideContainer}
+            transition={reduceMotion ? reducedMotionTransition : undefined}
+          >
+            <motion.div variants={pipelineAsideItem}>
+              <SectionLabel>Pipeline</SectionLabel>
+            </motion.div>
+            <motion.h2
+              variants={pipelineAsideItem}
+              className="text-3xl sm:text-4xl font-orbitron font-bold leading-tight"
+            >
+              Five stages per upload
+            </motion.h2>
+            <motion.p variants={pipelineAsideItem} className="text-muted-foreground mt-4 text-sm leading-relaxed">
               Same flow in the release CLI and the{" "}
               <span className="font-mono text-foreground">/analyze</span> endpoint.
-            </p>
-            <Button className="mt-8 rounded-full" variant="outline" asChild>
-              <Link href="/dashboard">
-                Try the pipeline
-                <ChevronRight className="w-4 h-4 ml-1" />
-              </Link>
-            </Button>
-          </Reveal>
+            </motion.p>
+            <motion.div variants={pipelineAsideItem}>
+              <Button className="mt-8 rounded-full group" variant="outline" asChild>
+                <Link href="/dashboard">
+                  Try the pipeline
+                  <ChevronRight className="w-4 h-4 ml-1 transition-transform duration-300 group-hover:translate-x-0.5" />
+                </Link>
+              </Button>
+            </motion.div>
+          </motion.aside>
 
           <div className="lg:col-span-8">
-            <RevealStagger as="ol" className="relative space-y-0 list-none m-0 p-0" stagger={0.12}>
-              {PIPELINE_STEPS.map((step, index) => (
-                <RevealItem key={step.step} variants={timelineStep} as="li">
-                  <div className="relative flex gap-6 sm:gap-8 pb-12 last:pb-0">
-                    {index < PIPELINE_STEPS.length - 1 && (
-                      <motion.span
-                        className="absolute left-[19px] sm:left-[23px] top-12 bottom-0 w-px bg-primary/30 origin-top"
-                        aria-hidden
-                        initial={{ scaleY: 0 }}
-                        whileInView={{ scaleY: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.5, delay: 0.15 + index * 0.1, ease: EASE_OUT_EXPO }}
-                      />
-                    )}
-                    <motion.div
-                      className="relative z-10 flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-full border-2 border-primary/40 bg-card font-mono text-xs sm:text-sm text-primary"
-                      whileInView={{ scale: [1, 1.08, 1] }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.2 + index * 0.1, duration: 0.4 }}
-                    >
-                      {step.step}
-                    </motion.div>
-                    <div className="pt-1 sm:pt-2 pb-2">
-                      <h3 className="text-lg sm:text-xl font-semibold">{step.title}</h3>
-                      <p className="text-muted-foreground text-sm mt-2 leading-relaxed max-w-lg">{step.description}</p>
-                    </div>
-                  </div>
-                </RevealItem>
-              ))}
-            </RevealStagger>
+            <PipelineTimeline />
           </div>
         </div>
       </div>

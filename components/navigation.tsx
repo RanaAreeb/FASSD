@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-context"
 import { useMotionReady } from "@/components/motion-ready-context"
 import { EASE_OUT_EXPO } from "@/lib/motion-presets"
+import { PROJECT } from "@/lib/project-facts"
 
 const HOME_NAV_LINKS = [
   { name: "Architecture", href: "/#architecture" },
@@ -54,15 +55,19 @@ export function Navigation() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20">
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative">
-                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-primary rounded-2xl flex items-center justify-center border border-primary/30 group-hover:scale-105 transition-transform duration-300">
-                  <div className="w-5 h-5 lg:w-6 lg:h-6 bg-background rounded-lg" />
+            <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group min-w-0">
+              <div className="relative shrink-0">
+                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-primary rounded-2xl flex items-center justify-center border border-primary/30 group-hover:scale-105 transition-transform duration-300 shadow-[0_0_20px_oklch(0.65_0.25_260/0.25)]">
+                  <span className="font-orbitron font-black text-[11px] lg:text-xs text-primary-foreground tracking-tight leading-none">
+                    {PROJECT.logoMark}
+                  </span>
                 </div>
               </div>
-              <div className="hidden sm:block">
-                <span className="text-xl lg:text-2xl font-bold font-orbitron tracking-tight text-foreground">FASSD</span>
-                <div className="text-xs text-muted-foreground font-medium tracking-wider">Forensic Acoustics</div>
+              <div className="min-w-0">
+                <span className="block text-base sm:text-xl lg:text-2xl font-bold font-orbitron tracking-tight leading-tight truncate">
+                  <span className="text-foreground">{PROJECT.namePrimary}</span>
+                  <span className="text-primary">{PROJECT.nameAccent}</span>
+                </span>
               </div>
             </Link>
 

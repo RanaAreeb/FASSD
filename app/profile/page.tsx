@@ -190,14 +190,14 @@ function ProfileContent() {
           </CardContent>
         </Card>
 
-        {/* Forensic Report Modal/Detail */}
+        {/* Analysis report detail */}
         {selectedReport && (
           <Card className="glass-effect border-border/50 mb-8">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="w-5 h-5" />
-                  Forensic Report
+                  Analysis Report
                 </CardTitle>
                 <Button variant="ghost" size="sm" onClick={() => setSelectedReport(null)}>
                   Close

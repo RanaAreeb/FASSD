@@ -1,8 +1,12 @@
-/** FYP project facts — aligned with Phase 9 release backend (`new backend/release/`). */
+/** Product + FYP facts — aligned with Phase 9 release backend (`new backend/release/`). */
 
 export const PROJECT = {
-  name: "FASSD",
-  fullName: "Forensic Acoustics for Synthetic Speech Detection",
+  name: "DeepFakeDetection",
+  logoMark: "DFD",
+  namePrimary: "DeepFake",
+  nameAccent: "Detection",
+  fullName: "DeepFake Detection — AI-powered synthetic speech screening",
+  domain: "deepfakedetection.dev",
   tagline:
     "Multi-axis voice integrity checks — origin, replay, channel, and partial segments — with experimental evidence indicators only.",
   disclaimer:
@@ -23,18 +27,73 @@ export const PIPELINE_SUBTITLE =
 
 export const MODEL_SPECS = [
   { label: "Active models", value: "4 axis indicators (Phase 9B)" },
-  { label: "Origin axis", value: "WavLM SSL file embedding" },
-  { label: "Replay / mixer", value: "File-level acoustic features" },
-  { label: "Partial axis", value: "Segment combined features" },
-  { label: "Segmentation", value: "4 s audio · 2 s hop @ 16 kHz" },
+  { label: "Origin axis", value: "WavLM SSL · origin_file_model" },
+  { label: "Replay axis", value: "Acoustic · replay_file_model" },
+  { label: "Mixer / channel", value: "Acoustic · mixer_file_model" },
+  { label: "Partial axis", value: "Combined · partial_segment model" },
+  { label: "Segmentation", value: "4 s windows · 2 s hop @ 16 kHz" },
   { label: "Output", value: "Separate evidence axes + fusion status" },
+] as const
+
+/** Per-axis cards for architecture bento — matches `release/MODEL_REGISTRY.md`. */
+export const ARCHITECTURE_AXES = [
+  {
+    label: "Origin",
+    model: "origin_file_model",
+    features: "WavLM SSL file embedding",
+    threshold: "0.92",
+    note: "AI vs human source indicator",
+  },
+  {
+    label: "Replay",
+    model: "replay_file_model",
+    features: "File-level acoustic features",
+    threshold: "0.65",
+    note: "Rerecording — not AI-generated",
+  },
+  {
+    label: "Mixer / channel",
+    model: "mixer_file_model",
+    features: "File-level acoustic features",
+    threshold: "0.75",
+    note: "Processing effects — not AI-generated",
+  },
+  {
+    label: "Partial segments",
+    model: "partial_fabrication_segment_model",
+    features: "Segment acoustic + SSL + localization",
+    threshold: "0.95",
+    note: "Candidate spans for manual review",
+  },
+] as const
+
+/** Compact tiles for the architecture bento (6 slots beside the hero card). */
+export const BENTO_SMALL_TILES = [
+  ...ARCHITECTURE_AXES.map((axis) => ({
+    key: axis.model,
+    label: axis.label.toUpperCase(),
+    value: axis.features,
+    meta: `≥ ${axis.threshold}`,
+  })),
+  {
+    key: "segmentation",
+    label: "SEGMENTATION",
+    value: "4 s windows · 2 s hop @ 16 kHz",
+    meta: "segmentation.py",
+  },
+  {
+    key: "output",
+    label: "OUTPUT",
+    value: "Separate evidence axes + fusion status",
+    meta: "/analyze",
+  },
 ] as const
 
 export const INFERENCE_DEFAULTS = [
   { label: "Origin threshold", value: "0.92 (candidate)" },
   { label: "Replay threshold", value: "0.65 (candidate)" },
   { label: "Mixer threshold", value: "0.75 (candidate)" },
-  { label: "Partial threshold", value: "0.50 (candidate)" },
+  { label: "Partial threshold", value: "0.95 (candidate)" },
 ] as const
 
 export const PIPELINE_STEPS = [
@@ -125,4 +184,4 @@ export const USE_CASES = [
 ] as const
 
 export const VALIDATION_NOTE =
-  "Phase 9B models are experimental forensic indicators. Internal smoke tests pass on release sample cases; broader Phase 9D batch validation is documented separately."
+  "Phase 9B models are experimental forensic indicators. Phase 9C smoke tests pass on release sample cases; broader Phase 9D batch validation is documented separately."

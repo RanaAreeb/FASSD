@@ -7,6 +7,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { AuthProvider } from "@/lib/auth-context"
 import { AppContent } from "@/components/app-content"
 import { Suspense } from "react"
+import { PROJECT } from "@/lib/project-facts"
 import "./globals.css"
 
 const orbitron = Orbitron({
@@ -16,8 +17,9 @@ const orbitron = Orbitron({
 })
 
 export const metadata: Metadata = {
-  title: "Forensic Acoustics for Synthetic Speech Detection",
-  description: "Revolutionary AI-powered technology that identifies synthetic audio with unprecedented accuracy",
+  title: PROJECT.fullName,
+  description:
+    "Upload audio for multi-axis deepfake screening — origin, replay, channel, and partial-segment evidence with experimental indicators only.",
   generator: "v0.app",
 }
 

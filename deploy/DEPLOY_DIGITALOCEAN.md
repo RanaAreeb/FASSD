@@ -229,6 +229,7 @@ curl https://api.yourdomain.com/health
 | --- | --- | --- |
 | `ready_for_analyze: false` | WavLM still downloading or failed | Wait, check logs, set `HF_TOKEN` if rate-limited |
 | `Phase 9C models not loaded` | Missing `.joblib` files | Re-upload `models/` from local machine |
+| `FUNCTION_PAYLOAD_TOO_LARGE` / `Request Entity Too Large` | Audio sent through Vercel proxy (>4.5 MB) | Set `INFERENCE_PROXY_TARGET` on Vercel to your DO API URL, redeploy frontend, set backend `CORS_ALLOW_ORIGINS` |
 | Vercel 502 | Wrong `INFERENCE_PROXY_TARGET` or API blocked | Check Vercel env var, DNS, firewall, Caddy logs |
 | Browser CORS error | `NEXT_PUBLIC_INFERENCE_URL` was set | Remove it and use `INFERENCE_PROXY_TARGET` instead |
 | `phase8f_fusion_rules` missing | Old backend code deployed | Pull latest repo with `src/phase8_fusion/` |

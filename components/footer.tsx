@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { PROJECT } from "@/lib/project-facts"
 
 export function Footer() {
   return (
@@ -7,14 +8,19 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
           <div className="md:col-span-5 space-y-4">
             <Link href="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-                <div className="w-5 h-5 bg-primary-foreground rounded-sm" />
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shrink-0">
+                <span className="font-orbitron font-black text-[10px] text-primary-foreground tracking-tight">
+                  {PROJECT.logoMark}
+                </span>
               </div>
-              <span className="text-xl font-orbitron font-bold text-foreground">FASSD</span>
+              <span className="text-xl font-orbitron font-bold text-foreground">
+                <span className="text-foreground">{PROJECT.namePrimary}</span>
+                <span className="text-primary">{PROJECT.nameAccent}</span>
+              </span>
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-sm">
-              Final-year project: Phase 9 multi-axis voice integrity checks, experimental forensic wording, and a
-              Next.js + FastAPI demo stack.
+              AI-powered synthetic speech screening with four separate integrity checks — Phase 9 release backend and
+              a Next.js + FastAPI demo stack.
             </p>
           </div>
 
@@ -50,17 +56,28 @@ export function Footer() {
           </div>
 
           <div className="md:col-span-4 space-y-3">
-            <h3 className="font-semibold text-sm">Repository</h3>
+            <h3 className="font-semibold text-sm">Platform</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>FYP code: FYP_FASSD-main</li>
-              <li>Inference: inference_api</li>
-              <li>Docs: PARTNER_INTEGRATION_GUIDE.md</li>
+              <li>
+                <a
+                  href={`https://${PROJECT.domain}`}
+                  className="hover:text-primary transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {PROJECT.domain}
+                </a>
+              </li>
+              <li>Phase 9 release inference API</li>
+              <li>Multi-axis evidence · manual review recommended</li>
             </ul>
           </div>
         </div>
 
         <div className="mt-10 pt-6 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} FASSD · Forensic Acoustics for Synthetic Speech Detection</p>
+          <p>
+            © {new Date().getFullYear()} {PROJECT.name} · {PROJECT.fullName}
+          </p>
           <p className="text-xs text-center sm:text-right max-w-md">
             Model outputs are screening estimates — not legal or forensic certification.
           </p>

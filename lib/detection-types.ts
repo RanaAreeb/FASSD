@@ -11,6 +11,10 @@ export interface EvidenceAxisCard {
 export interface Phase9ResultView {
   caseId?: string
   phase?: string
+  statusTitle?: string
+  severityLevel?: string
+  processingStatus?: string
+  durationSec?: number
   voiceOriginText: string
   voiceOriginLabel: string
   forensicIndicatorSummary: string

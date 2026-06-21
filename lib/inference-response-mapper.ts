@@ -52,6 +52,8 @@ export type Phase9AnalyzeResponse = {
     highlighted_segment_text?: string
     confidence_text?: string
     plain_language_explanation?: string
+    status_title?: string
+    severity_level?: string
     strong_forensic_detected?: boolean
   }
   evidence_axis_cards?: EvidenceAxisCard[]
@@ -187,6 +189,10 @@ export function mapPhase9Response(
   const phase9: Phase9ResultView = {
     caseId: data.case_id,
     phase: data.phase,
+    statusTitle: summary.status_title ?? (data.processing_status === "error" ? "Analysis incomplete" : "Analysis completed"),
+    severityLevel: summary.severity_level ?? "clear",
+    processingStatus: data.processing_status ?? "ok",
+    durationSec: typeof durationSec === "number" ? durationSec : undefined,
     voiceOriginText: summary.voice_origin_text ?? voice.display_text ?? "Voice origin: Inconclusive",
     voiceOriginLabel: label,
     forensicIndicatorSummary:
