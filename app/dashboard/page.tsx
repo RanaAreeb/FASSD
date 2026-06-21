@@ -81,6 +81,11 @@ function DashboardContent() {
             attackType: analysisResult.attackType,
             processingTime: analysisResult.processingTime,
             details: analysisResult.details,
+            caseId:
+              analysisResult.phase9?.caseId ??
+              analysisResult.phase9?.reports?.caseId,
+            backend: analysisResult.backend,
+            reportPayload: analysisResult.reportPayload,
           })
         } catch (saveError) {
           console.error("Failed to save analysis to Firestore:", saveError)

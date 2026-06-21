@@ -54,6 +54,28 @@ export async function readInferenceError(resp: Response): Promise<string> {
   return raw
 }
 
+export async function fetchAnalysisReportJson(caseId: string): Promise<Record<string, unknown>> {
+  const user = auth?.currentUser
+  if (!user) {
+    throw new Error("You must be signed in to view reports.")
+  }
+
+  const headers: HeadersInit = {
+    Authorization: `Bearer ${await user.getIdToken()}`,
+  }
+
+  const response = await fetch(
+    `${getInferenceBase()}/reports/${encodeURIComponent(caseId)}/json`,
+    { headers, signal: AbortSignal.timeout(INFERENCE_TIMEOUT_MS) },
+  )
+
+  if (!response.ok) {
+    throw new Error(await readInferenceError(response))
+  }
+
+  return (await response.json()) as Record<string, unknown>
+}
+
 export async function downloadAnalysisReport(caseId: string, kind: "pdf" | "json"): Promise<void> {
   const user = auth?.currentUser
   if (!user) {

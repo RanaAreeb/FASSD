@@ -252,6 +252,7 @@ export function mapPhase9Response(
     ...createEmptyDetectionResult(),
     backend: "phase9",
     phase9,
+    reportPayload: data as unknown as Record<string, unknown>,
     filename: file.name,
     fileSize: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
     isDeepfake,

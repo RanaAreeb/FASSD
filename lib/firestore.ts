@@ -27,6 +27,9 @@ export interface AudioAnalysis {
     neuralNetworkScore: number
     artifactDetection: number
   }
+  caseId?: string
+  backend?: "legacy" | "phase9"
+  reportPayload?: Record<string, unknown>
   createdAt: string
 }
 

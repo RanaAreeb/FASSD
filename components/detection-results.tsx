@@ -8,8 +8,9 @@ import { AudioWaveformDisplay } from "@/components/audio-waveform-display"
 import { cn } from "@/lib/utils"
 import type { DetectionResult, EvidenceAxisCard } from "@/lib/detection-types"
 import { downloadAnalysisReport } from "@/lib/inference-client"
+import { AnalysisReportViewer } from "@/components/analysis-report-viewer"
 import { FILE_VERDICT_LABELS, fileVerdictTag } from "@/lib/verdict-labels"
-import { History, FileDown, FileJson, RotateCcw, XCircle } from "lucide-react"
+import { History, FileDown, FileJson, FileText, RotateCcw, XCircle } from "lucide-react"
 import { useState } from "react"
 
 interface DetectionResultsProps {
@@ -66,6 +67,8 @@ function Phase9DetectionResults({
   const p9 = result.phase9!
   const [reportError, setReportError] = useState<string | null>(null)
   const [downloading, setDownloading] = useState<"pdf" | "json" | null>(null)
+  const [reportOpen, setReportOpen] = useState(false)
+  const caseId = p9.reports?.caseId ?? p9.caseId
   const severity = p9.severityLevel ?? "clear"
   const highlights = p9.segmentHighlights?.map((s) => ({
     startSec: s.startSec,
@@ -77,7 +80,6 @@ function Phase9DetectionResults({
     typeof p9.durationSec === "number" ? `${p9.durationSec.toFixed(1)} s` : result.duration
 
   const handleDownload = async (kind: "pdf" | "json") => {
-    const caseId = p9.reports?.caseId ?? p9.caseId
     if (!caseId) {
       setReportError("Report is not ready yet — case ID missing.")
       return
@@ -93,8 +95,7 @@ function Phase9DetectionResults({
     }
   }
 
-  const canDownloadPdf = p9.reports?.pdfAvailable
-  const canDownloadJson = p9.reports?.jsonAvailable
+  const canDownload = !!caseId
 
   return (
     <div className="space-y-5 animate-float-up">
@@ -194,9 +195,13 @@ function Phase9DetectionResults({
         <p className="text-xs text-muted-foreground/80 leading-relaxed px-1">{p9.safetyWording}</p>
       )}
 
-      {(canDownloadPdf || canDownloadJson) && (
-        <div className="flex flex-col sm:flex-row gap-3">
-          {canDownloadPdf && (
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Button className="flex-1" onClick={() => setReportOpen(true)}>
+          <FileText className="w-4 h-4 mr-2" />
+          View full report
+        </Button>
+        {canDownload && (
+          <>
             <Button
               variant="outline"
               className="flex-1"
@@ -204,10 +209,8 @@ function Phase9DetectionResults({
               onClick={() => handleDownload("pdf")}
             >
               <FileDown className="w-4 h-4 mr-2" />
-              {downloading === "pdf" ? "Preparing PDF…" : "Download PDF report"}
+              {downloading === "pdf" ? "Preparing PDF…" : "Download PDF"}
             </Button>
-          )}
-          {canDownloadJson && (
             <Button
               variant="outline"
               className="flex-1"
@@ -215,11 +218,18 @@ function Phase9DetectionResults({
               onClick={() => handleDownload("json")}
             >
               <FileJson className="w-4 h-4 mr-2" />
-              {downloading === "json" ? "Preparing JSON…" : "Download JSON report"}
+              {downloading === "json" ? "Preparing JSON…" : "Download JSON"}
             </Button>
-          )}
-        </div>
-      )}
+          </>
+        )}
+      </div>
+
+      <AnalysisReportViewer
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        result={result}
+        filename={result.filename}
+      />
 
       {reportError && (
         <p className="text-sm text-red-300/90 leading-relaxed px-1">{reportError}</p>

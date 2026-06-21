@@ -78,6 +78,8 @@ export interface DetectionResult {
   backend?: "legacy" | "phase9"
   /** Phase 9 experimental forensic evidence (no conclusive REAL/FAKE). */
   phase9?: Phase9ResultView
+  /** Full API payload for in-app report viewer and history. */
+  reportPayload?: Record<string, unknown>
   /** Score within ~5% of the effective vote threshold (informational only). */
   nearThreshold?: boolean
   /** Multiclass head argmax disagrees with file-level REAL/FAKE (informational only). */
