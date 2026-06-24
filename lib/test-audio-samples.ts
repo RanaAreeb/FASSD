@@ -80,12 +80,27 @@ export const TEST_AUDIO_SAMPLES: TestAudioSample[] = [
   },
 ]
 
+/** Map /test/... public path to same-origin API that reads from disk (works when gitignored). */
+export function testAudioFetchUrl(publicPath: string): string {
+  const relative = publicPath.replace(/^\/test\//, "").replace(/^\//, "")
+  return `/api/test-audio/${relative}`
+}
+
 export async function fetchTestSampleAsFile(sample: TestAudioSample): Promise<File> {
-  const response = await fetch(sample.path)
+  const response = await fetch(testAudioFetchUrl(sample.path))
   if (!response.ok) {
-    throw new Error(`Could not load ${sample.label}. Check that /public/test files are deployed.`)
+    const detail = await response.json().catch(() => null)
+    const hint =
+      typeof detail?.detail === "string"
+        ? detail.detail
+        : `Missing file at public${sample.path}`
+    throw new Error(`Could not load ${sample.label}. ${hint}`)
   }
   const blob = await response.blob()
   const name = sample.path.split("/").pop() ?? `${sample.id}.audio`
-  return new File([blob], name, { type: blob.type || "audio/mpeg" })
+  const ext = name.split(".").pop()?.toLowerCase()
+  const type =
+    blob.type ||
+    (ext === "wav" ? "audio/wav" : ext === "mp3" ? "audio/mpeg" : "application/octet-stream")
+  return new File([blob], name, { type })
 }

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { CASE_STUDIES_INTRO, REAL_WORLD_CASE_STUDIES } from "@/lib/case-studies"
 import { FORENSIC_DISCLAIMER } from "@/lib/copy-safety"
+import { testAudioFetchUrl } from "@/lib/test-audio-samples"
 import { ExternalLink, FlaskConical, PlayCircle } from "lucide-react"
 
 function AxisBlock({
@@ -114,7 +115,7 @@ export function CaseStudiesView() {
 
               <div className="flex flex-wrap gap-3">
                 <Button variant="outline" size="sm" asChild>
-                  <a href={study.audioPath} download={study.audioFilename}>
+                  <a href={testAudioFetchUrl(study.audioPath)} download={study.audioFilename}>
                     Download test audio
                   </a>
                 </Button>

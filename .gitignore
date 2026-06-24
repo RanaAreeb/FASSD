@@ -127,6 +127,15 @@ data/realworld/
 *.flac
 *.aac
 *.ogg
+# Curated FYP demo clips under public/test (must be deployable)
+!public/test/
+!public/test/**/
+!public/test/**/*.mp3
+!public/test/**/*.wav
+!public/test/**/*.m4a
+!public/test/**/*.flac
+!public/test/**/*.aac
+!public/test/**/*.ogg
 
 # --- Jupyter ---
 .ipynb_checkpoints/
