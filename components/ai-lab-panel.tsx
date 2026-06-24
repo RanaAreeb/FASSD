@@ -177,7 +177,19 @@ export function AiLabPanel({ onFileReady, disabled }: AiLabPanelProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="deepgram-prompt">AI speech text</Label>
+        <div className="flex items-center justify-between gap-3">
+          <Label htmlFor="deepgram-prompt">AI speech text</Label>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-[11px]"
+            disabled={disabled || !!busy}
+            onClick={() => setPrompt(DEFAULT_AI_LAB_PROMPT)}
+          >
+            Reset default text
+          </Button>
+        </div>
         <Textarea
           id="deepgram-prompt"
           value={prompt}
@@ -187,10 +199,13 @@ export function AiLabPanel({ onFileReady, disabled }: AiLabPanelProps) {
           rows={10}
           className="text-sm leading-relaxed resize-y min-h-[180px]"
         />
-        <p className="text-[11px] text-muted-foreground">
-          Target at least {AI_LAB_MIN_DURATION_SECONDS} seconds of speech (~150+ words). No silence is added — length
-          comes from your text only.
-        </p>
+        <div className="flex items-center justify-between gap-3 text-[11px] text-muted-foreground">
+          <p>
+            Type or paste your own script. Target at least {AI_LAB_MIN_DURATION_SECONDS} seconds (~150+ words). No
+            silence is added.
+          </p>
+          <span className="font-mono shrink-0">{prompt.length}/2000</span>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
