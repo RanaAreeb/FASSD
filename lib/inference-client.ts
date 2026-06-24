@@ -2,6 +2,7 @@ import { getInferenceBase } from "@/lib/inference-url"
 import { auth } from "@/lib/firebase"
 
 const INFERENCE_TIMEOUT_MS = 10 * 60 * 1000
+const VERCEL_SERVERLESS_BODY_LIMIT_BYTES = 4.5 * 1024 * 1024
 
 export async function postAnalyze(file: File): Promise<Response> {
   const form = new FormData()
@@ -27,9 +28,26 @@ export async function postAnalyze(file: File): Promise<Response> {
   } catch (err) {
     // Deployed direct-host calls can fail on DNS/CORS/TLS. Retry same-origin proxy once.
     if (base !== "/api/inference") {
+      if (file.size > VERCEL_SERVERLESS_BODY_LIMIT_BYTES) {
+        throw new Error(
+          "DIRECT_INFERENCE_UNREACHABLE_LARGE_UPLOAD: The browser could not reach the direct inference API, and this file is too large for the Vercel fallback proxy. Fix backend CORS for your deployed frontend domain.",
+        )
+      }
       try {
-        return await doFetch("/api/inference")
-      } catch {
+        const fallback = await doFetch("/api/inference")
+        if (fallback.status === 413) {
+          throw new Error(
+            "DIRECT_INFERENCE_UNREACHABLE_PROXY_TOO_LARGE: Direct inference failed, then the Vercel fallback rejected the upload size. Fix backend CORS for your deployed frontend domain.",
+          )
+        }
+        return fallback
+      } catch (fallbackErr) {
+        if (
+          fallbackErr instanceof Error &&
+          fallbackErr.message.startsWith("DIRECT_INFERENCE_UNREACHABLE")
+        ) {
+          throw fallbackErr
+        }
         // Preserve original error message for user-facing diagnostics.
       }
     }

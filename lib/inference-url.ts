@@ -11,6 +11,13 @@ export function getInferenceBase(): string {
 
 export function inferenceFetchErrorMessage(err: unknown): string {
   const msg = err instanceof Error ? err.message : String(err)
+  if (msg.includes("DIRECT_INFERENCE_UNREACHABLE")) {
+    return [
+      "The deployed frontend reached the direct inference API path, but the backend did not allow the browser request.",
+      "Fix backend CORS first: set CORS_ALLOW_ORIGINS=https://www.deepfakedetection.dev,https://deepfakedetection.dev,https://your-vercel-preview-domain.vercel.app and restart/redeploy the backend.",
+      "Do not rely on the Vercel proxy for generated/mixed audio because larger uploads can exceed Vercel's serverless body limit.",
+    ].join(" ")
+  }
   if (
     msg.includes("FUNCTION_PAYLOAD_TOO_LARGE") ||
     msg.includes("Request Entity Too Large") ||
