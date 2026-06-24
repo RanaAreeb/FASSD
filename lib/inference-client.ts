@@ -13,12 +13,28 @@ export async function postAnalyze(file: File): Promise<Response> {
     headers.Authorization = `Bearer ${await user.getIdToken()}`
   }
 
-  return fetch(`${getInferenceBase()}/analyze-audio`, {
-    method: "POST",
-    body: form,
-    headers,
-    signal: AbortSignal.timeout(INFERENCE_TIMEOUT_MS),
-  })
+  const base = getInferenceBase()
+  const doFetch = (targetBase: string) =>
+    fetch(`${targetBase}/analyze-audio`, {
+      method: "POST",
+      body: form,
+      headers,
+      signal: AbortSignal.timeout(INFERENCE_TIMEOUT_MS),
+    })
+
+  try {
+    return await doFetch(base)
+  } catch (err) {
+    // Deployed direct-host calls can fail on DNS/CORS/TLS. Retry same-origin proxy once.
+    if (base !== "/api/inference") {
+      try {
+        return await doFetch("/api/inference")
+      } catch {
+        // Preserve original error message for user-facing diagnostics.
+      }
+    }
+    throw err
+  }
 }
 
 export async function readInferenceError(resp: Response): Promise<string> {

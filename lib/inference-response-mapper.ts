@@ -147,6 +147,72 @@ function axisConfidencePct(data: Phase9AnalyzeResponse): number {
   return Math.round(capScreeningPercent(max * 100))
 }
 
+function axisProbabilityForCard(card: EvidenceAxisCard, data: Phase9AnalyzeResponse): number | null {
+  const axis = card.axis_name.toLowerCase()
+  const report = data.phase9c_report
+  if (axis.includes("origin")) return report?.origin_evidence?.probability ?? null
+  if (axis.includes("replay")) return report?.replay_evidence?.probability ?? null
+  if (axis.includes("channel") || axis.includes("mixer")) return report?.mixer_channel_evidence?.probability ?? null
+  if (axis.includes("partial")) return report?.partial_fabrication_evidence?.max_segment_probability ?? null
+  return null
+}
+
+function evidenceStrengthLabel(probability: number): string {
+  if (probability < 0.35) return "Low evidence"
+  if (probability < 0.75) return "Moderate evidence"
+  return "High evidence"
+}
+
+function normalizeEvidenceAxisCards(cards: EvidenceAxisCard[], data: Phase9AnalyzeResponse): EvidenceAxisCard[] {
+  return cards.map((card) => {
+    const probability = axisProbabilityForCard(card, data)
+    if (probability == null || !Number.isFinite(probability)) return card
+
+    // Always derive score copy from the numeric axis probability so text cannot contradict the score.
+    return {
+      ...card,
+      score_text: `Screening score: ${formatScreeningScore(probability)} · Evidence strength: ${evidenceStrengthLabel(probability)}`,
+    }
+  })
+}
+
+function shouldUseLikelyHumanWithChannelArtifacts(
+  originProb: number,
+  replayProb: number,
+  mixerProb: number,
+  voiceOriginText: string | undefined,
+): boolean {
+  const text = (voiceOriginText ?? "").toLowerCase()
+  const isInconclusiveHeadline =
+    text.includes("inconclusive") || text.includes("replay/channel processing")
+  const lowOrigin = originProb < 0.35
+  const elevatedChannelContext = replayProb >= 0.75 || mixerProb >= 0.75
+  return isInconclusiveHeadline && lowOrigin && elevatedChannelContext
+}
+
+function applyLikelyHumanWithChannelArtifactsCopy(
+  phase9: Phase9ResultView,
+  originProb: number,
+  replayProb: number,
+  mixerProb: number,
+): Phase9ResultView {
+  if (
+    !shouldUseLikelyHumanWithChannelArtifacts(originProb, replayProb, mixerProb, phase9.voiceOriginText)
+  ) {
+    return phase9
+  }
+  return {
+    ...phase9,
+    voiceOriginLabel: "likely_human_with_channel_artifacts",
+    voiceOriginText: "Voice origin: Likely human, but recording-chain artifacts detected",
+    recommendation:
+      phase9.recommendation || "Manual review suggested due to recording-chain artifacts.",
+    plainLanguageExplanation:
+      phase9.plainLanguageExplanation ||
+      "AI-origin score is low, but replay/channel evidence is elevated. This usually reflects recording or transmission artifacts, so the result remains review-oriented.",
+  }
+}
+
 export function mapPhase9Response(
   data: Phase9AnalyzeResponse,
   file: File,
@@ -240,7 +306,7 @@ export function mapPhase9Response(
   const partialProb = report?.partial_fabrication_evidence?.max_segment_probability ?? 0
 
   const durationSec = data.duration_sec ?? report?.audio_metadata?.duration_sec
-  const cards = data.evidence_axis_cards ?? []
+  const cards = normalizeEvidenceAxisCards(data.evidence_axis_cards ?? [], data)
 
   const pf = data.partial_fabrication
   const topSegments = pf?.show_segments_table !== false ? (pf?.top_segments ?? []).slice(0, 10) : []
@@ -260,7 +326,7 @@ export function mapPhase9Response(
       label: formatSegmentRange(seg.start_sec, seg.end_sec),
     }))
 
-  const phase9: Phase9ResultView = applyElevatedOriginSafetyCopy(
+  const basePhase9: Phase9ResultView = applyElevatedOriginSafetyCopy(
     {
       caseId: data.case_id,
       phase: data.phase,
@@ -302,6 +368,12 @@ export function mapPhase9Response(
           : undefined,
     },
     originProb,
+  )
+  const phase9: Phase9ResultView = applyLikelyHumanWithChannelArtifactsCopy(
+    basePhase9,
+    originProb,
+    replayProb,
+    mixerProb,
   )
 
   const resolvedLabel = phase9.voiceOriginLabel

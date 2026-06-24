@@ -39,7 +39,7 @@ export async function GET(
     const data = await fs.readFile(filePath)
     const ext = path.extname(filePath).toLowerCase()
     const filename = path.basename(filePath)
-    return new NextResponse(data, {
+    return new NextResponse(new Uint8Array(data), {
       headers: {
         "Content-Type": MIME_BY_EXT[ext] ?? "application/octet-stream",
         "Content-Disposition": `inline; filename="${filename}"`,

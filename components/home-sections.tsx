@@ -85,7 +85,7 @@ export function HomeHero() {
         animate={motionReady ? { scaleY: 1 } : { scaleY: 0 }}
         transition={{ duration: 1, delay: 0.8, ease: EASE_OUT_EXPO }}
       />
-      <HeroReveal delay={0.7} variants={fadeIn}>
+      <HeroReveal delay={0.7} variants={fadeUp}>
         <div className="absolute top-48 right-8 text-[10px] font-mono text-muted-foreground/50 rotate-90 origin-right hidden lg:block tracking-widest">
           16 KHZ · MONO · PHASE 9
         </div>
