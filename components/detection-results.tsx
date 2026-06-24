@@ -10,7 +10,8 @@ import type { DetectionResult, EvidenceAxisCard } from "@/lib/detection-types"
 import { downloadAnalysisReport } from "@/lib/inference-client"
 import { AnalysisReportViewer } from "@/components/analysis-report-viewer"
 import { FILE_VERDICT_LABELS, fileVerdictTag } from "@/lib/verdict-labels"
-import { History, FileDown, FileJson, FileText, RotateCcw, XCircle } from "lucide-react"
+import { softenForensicCopy, FORENSIC_DISCLAIMER, RESULTS_VS_REPORT_NOTE } from "@/lib/copy-safety"
+import { History, FileDown, FileJson, FileText, Info, RotateCcw, XCircle } from "lucide-react"
 import { useState } from "react"
 
 interface DetectionResultsProps {
@@ -78,6 +79,12 @@ function Phase9DetectionResults({
   }))
   const durationLabel =
     typeof p9.durationSec === "number" ? `${p9.durationSec.toFixed(1)} s` : result.duration
+  const voiceOriginText = softenForensicCopy(p9.voiceOriginText)
+  const forensicSummary = softenForensicCopy(p9.forensicIndicatorSummary)
+  const recommendation = softenForensicCopy(p9.recommendation)
+  const highlightedSegment = softenForensicCopy(p9.highlightedSegmentText)
+  const confidenceText = softenForensicCopy(p9.confidenceText)
+  const isInvalidInput = p9.processingStatus === "invalid_input"
 
   const handleDownload = async (kind: "pdf" | "json") => {
     if (!caseId) {
@@ -99,28 +106,38 @@ function Phase9DetectionResults({
 
   return (
     <div className="space-y-5 animate-float-up">
+      <Card className="border-border/50 bg-muted/20">
+        <CardContent className="p-4 flex gap-3 text-xs text-muted-foreground leading-relaxed">
+          <Info className="w-4 h-4 shrink-0 text-primary/80 mt-0.5" />
+          <div>
+            <p>{RESULTS_VS_REPORT_NOTE}</p>
+            <p className="mt-2">{FORENSIC_DISCLAIMER}</p>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className={cn("border-border/60 bg-card/90 border-l-4", MAIN_RESULT_BORDER[severity] ?? MAIN_RESULT_BORDER.clear)}>
         <CardContent className="p-6 sm:p-7 space-y-3">
           <p className="text-sm text-muted-foreground">{p9.statusTitle ?? "Analysis completed"}</p>
           <h2 className="text-xl sm:text-2xl font-bold leading-snug text-foreground">
-            {p9.voiceOriginText}
+            {voiceOriginText}
           </h2>
-          {p9.forensicIndicatorSummary && (
+          {forensicSummary && (
             <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-              {p9.forensicIndicatorSummary}
+              {forensicSummary}
             </p>
           )}
-          {p9.highlightedSegmentText && (
-            <p className="text-sm text-muted-foreground leading-relaxed">{p9.highlightedSegmentText}</p>
+          {highlightedSegment && (
+            <p className="text-sm text-muted-foreground leading-relaxed">{highlightedSegment}</p>
           )}
-          {p9.recommendation && (
+          {recommendation && (
             <p className="text-sm sm:text-base text-foreground leading-relaxed">
               <span className="font-semibold">Recommendation: </span>
-              {p9.recommendation}
+              {recommendation}
             </p>
           )}
-          {p9.confidenceText && (
-            <p className="text-sm text-muted-foreground">{p9.confidenceText}</p>
+          {confidenceText && !isInvalidInput && (
+            <p className="text-sm text-muted-foreground">{confidenceText}</p>
           )}
         </CardContent>
       </Card>
@@ -198,7 +215,7 @@ function Phase9DetectionResults({
       <div className="flex flex-col sm:flex-row gap-3">
         <Button className="flex-1" onClick={() => setReportOpen(true)}>
           <FileText className="w-4 h-4 mr-2" />
-          View full report
+          Technical details & export
         </Button>
         {canDownload && (
           <>
@@ -249,9 +266,11 @@ function EvidenceIndicatorCard({ card }: { card: EvidenceAxisCard }) {
       <CardContent className="p-4 sm:p-5 space-y-2">
         <p className="font-semibold text-foreground">{card.axis_name}</p>
         <p className="text-sm font-medium text-muted-foreground">{status}</p>
-        <p className="text-sm text-muted-foreground leading-relaxed">{card.user_text}</p>
+        <p className="text-sm text-muted-foreground leading-relaxed">{softenForensicCopy(card.user_text)}</p>
         {card.score_text && (
-          <p className="text-xs text-muted-foreground/90 pt-1 border-t border-border/40">{card.score_text}</p>
+          <p className="text-xs text-muted-foreground/90 pt-1 border-t border-border/40">
+            {softenForensicCopy(card.score_text)}
+          </p>
         )}
       </CardContent>
     </Card>
@@ -302,7 +321,9 @@ function LegacyDetectionResults({
       <Card className="border-border/60 bg-card/90">
         <CardContent className="p-6">
           <h2 className="text-2xl font-semibold">{copy.title}</h2>
-          <p className="mt-2 text-muted-foreground">{result.overallExplanation ?? copy.description}</p>
+          <p className="mt-2 text-muted-foreground">
+            {softenForensicCopy(result.overallExplanation ?? copy.description)}
+          </p>
         </CardContent>
       </Card>
 

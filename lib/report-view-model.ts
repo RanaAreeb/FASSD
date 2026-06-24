@@ -1,5 +1,7 @@
 import type { DetectionResult, EvidenceAxisCard, Phase9ResultView } from "@/lib/detection-types"
 import type { AudioAnalysis } from "@/lib/firestore"
+import { formatScreeningScore, formatScreeningScoreFromPercent } from "@/lib/copy-safety"
+import { strengthLabelFromCard } from "@/lib/forensic-consistency"
 
 export interface ReportAxisMetric {
   label: string
@@ -41,11 +43,15 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 }
 
 function fmtProb(value: unknown): string {
-  return typeof value === "number" ? `${(value * 100).toFixed(1)}%` : "—"
+  return typeof value === "number" ? formatScreeningScore(value) : "—"
 }
 
-function fmtStrength(evidence: Record<string, unknown> | null): string {
+function fmtStrength(evidence: Record<string, unknown> | null, cards: EvidenceAxisCard[], needle: string): string {
+  const fromCard = strengthLabelFromCard(cards, needle)
+  if (fromCard !== "—") return fromCard
   if (!evidence) return "—"
+  const band = evidence.evidence_strength_band
+  if (typeof band === "string") return band
   const strength = evidence.evidence_strength ?? evidence.label
   return typeof strength === "string" ? strength : "—"
 }
@@ -131,22 +137,22 @@ export function buildReportViewModelFromPayload(
       {
         label: "AI-origin evidence",
         probability: fmtProb(origin?.probability),
-        strength: fmtStrength(origin),
+        strength: fmtStrength(origin, cards, "AI-origin"),
       },
       {
         label: "Replay evidence",
         probability: fmtProb(replay?.probability),
-        strength: fmtStrength(replay),
+        strength: fmtStrength(replay, cards, "Replay"),
       },
       {
         label: "Channel/mixer evidence",
         probability: fmtProb(mixer?.probability),
-        strength: fmtStrength(mixer),
+        strength: fmtStrength(mixer, cards, "Channel"),
       },
       {
         label: "Partial segment evidence",
         probability: fmtProb(partial?.max_segment_probability ?? partial?.probability),
-        strength: fmtStrength(partial),
+        strength: fmtStrength(partial, cards, "Partial"),
       },
     ],
     limitations,
@@ -187,22 +193,22 @@ export function buildReportViewModelFromPhase9(
     axisMetrics: [
       {
         label: "AI-origin evidence",
-        probability: `${result?.details.spectralAnalysis ?? 0}%`,
+        probability: formatScreeningScoreFromPercent(result?.details.spectralAnalysis),
         strength: "mapped",
       },
       {
         label: "Replay evidence",
-        probability: `${result?.details.temporalConsistency ?? 0}%`,
+        probability: formatScreeningScoreFromPercent(result?.details.temporalConsistency),
         strength: "mapped",
       },
       {
         label: "Channel/mixer evidence",
-        probability: `${result?.details.neuralNetworkScore ?? 0}%`,
+        probability: formatScreeningScoreFromPercent(result?.details.neuralNetworkScore),
         strength: "mapped",
       },
       {
         label: "Partial segment evidence",
-        probability: `${result?.details.artifactDetection ?? 0}%`,
+        probability: formatScreeningScoreFromPercent(result?.details.artifactDetection),
         strength: "mapped",
       },
     ],
@@ -235,30 +241,30 @@ export function buildReportViewModelFromHistory(analysis: AudioAnalysis): Report
       {
         axis_name: "Spectral analysis",
         status: analysis.details.spectralAnalysis > 50 ? "Detected" : "Not detected",
-        user_text: `${analysis.details.spectralAnalysis}% indicator strength`,
+        user_text: `${formatScreeningScoreFromPercent(analysis.details.spectralAnalysis)} indicator strength`,
       },
       {
         axis_name: "Temporal consistency",
         status: analysis.details.temporalConsistency > 50 ? "Detected" : "Not detected",
-        user_text: `${analysis.details.temporalConsistency}% indicator strength`,
+        user_text: `${formatScreeningScoreFromPercent(analysis.details.temporalConsistency)} indicator strength`,
       },
       {
         axis_name: "Channel / mixer",
         status: analysis.details.neuralNetworkScore > 50 ? "Detected" : "Not detected",
-        user_text: `${analysis.details.neuralNetworkScore}% indicator strength`,
+        user_text: `${formatScreeningScoreFromPercent(analysis.details.neuralNetworkScore)} indicator strength`,
       },
       {
         axis_name: "Partial segments",
         status: analysis.details.artifactDetection > 50 ? "Review candidate" : "Not detected",
-        user_text: `${analysis.details.artifactDetection}% indicator strength`,
+        user_text: `${formatScreeningScoreFromPercent(analysis.details.artifactDetection)} indicator strength`,
       },
     ],
     segmentRows: [],
     axisMetrics: [
-      { label: "Spectral analysis", probability: `${analysis.details.spectralAnalysis}%`, strength: "saved" },
-      { label: "Temporal consistency", probability: `${analysis.details.temporalConsistency}%`, strength: "saved" },
-      { label: "Channel / mixer", probability: `${analysis.details.neuralNetworkScore}%`, strength: "saved" },
-      { label: "Partial segments", probability: `${analysis.details.artifactDetection}%`, strength: "saved" },
+      { label: "Spectral analysis", probability: formatScreeningScoreFromPercent(analysis.details.spectralAnalysis), strength: "saved" },
+      { label: "Temporal consistency", probability: formatScreeningScoreFromPercent(analysis.details.temporalConsistency), strength: "saved" },
+      { label: "Channel / mixer", probability: formatScreeningScoreFromPercent(analysis.details.neuralNetworkScore), strength: "saved" },
+      { label: "Partial segments", probability: formatScreeningScoreFromPercent(analysis.details.artifactDetection), strength: "saved" },
     ],
     limitations: analysis.caseId
       ? []

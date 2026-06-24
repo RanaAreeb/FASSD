@@ -15,6 +15,7 @@ const HOME_NAV_LINKS = [
   { name: "Pipeline", href: "/#pipeline" },
   { name: "Features", href: "/#features" },
   { name: "Use cases", href: "/#use-cases" },
+  { name: "Case studies", href: "/case-studies" },
 ]
 
 export function Navigation() {

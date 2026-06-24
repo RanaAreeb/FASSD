@@ -520,7 +520,7 @@ GitHub Student Pack DigitalOcean credit expires **July 31, 2026** — destroy th
 
 1. **Vercel proxy is not for large uploads** — use direct API URL for `/analyze`.
 2. **Long scans (~100s+)** — requires generous timeouts on client and Vercel function duration.
-3. **Firestore history stores simplified fields** — not the full Phase 9 JSON report.
+3. **Firestore history stores key Phase 9 report data for the in-app report viewer** — older scans from before this change may only show a simplified summary.
 4. **UI still derives a binary `isDeepfake` flag** for history compatibility — full multi-axis nuance is in the results view, not the history list.
 5. **No server-side audio storage** — files are processed in memory; not retained after analysis.
 6. **Production depends on manual model upload** — `.joblib` files are not in the git repo.
@@ -540,7 +540,39 @@ GitHub Student Pack DigitalOcean credit expires **July 31, 2026** — destroy th
 
 ---
 
-## 20. Closing Statement
+## 20. FYP Panel Q&A
+
+**What happens if someone uploads animal voices, ringtone audio, tones, or silence?**
+
+These are not valid inputs for a speech deepfake detector. The backend now runs a pre-inference quality gate for duration, silence, active audio, and speech-like acoustic variation. Invalid files return `processing_status=invalid_input`, and the frontend shows “Upload not analyzed” with a plain reason instead of a fake/real verdict.
+
+**What happens with a 3.5-second clip?**
+
+The frontend blocks browser-decodable clips under 5 seconds, and the backend enforces the same default through `MIN_AUDIO_DURATION_SEC=5`. The panel answer is: we reject it because it does not provide enough speech context for reliable forensic screening.
+
+**What prevents very large audio from crashing the system?**
+
+There are two controls: `MAX_UPLOAD_BYTES=52428800` caps upload size, and `MAX_AUDIO_DURATION_SEC=300` caps decoded duration. The backend checks these before expensive WavLM/model inference.
+
+**Can WhatsApp `.amr` audio be tested?**
+
+Yes. `.amr`, `.3gp`, and `.3gpp` are allowed input extensions. The backend decodes them through `ffmpeg` into the model’s mono 16 kHz path. If conversion fails, the API returns a clear unsupported-codec style error rather than crashing.
+
+**Can one user read another user’s reports or history?**
+
+No. Firestore rules require `request.auth.uid` to match the document owner (`userId`). Storage rules restrict avatar writes to `avatars/{uid}.*`, under 2 MB, and verified users only.
+
+**What if a panel member refuses Google sign-in for security reasons?**
+
+Email/password sign-in is supported. For security, email/password users must verify their email before accessing dashboard, profile, upload history, or analysis features.
+
+**Are verification emails sent?**
+
+Yes. Sign-up calls Firebase email verification. Until `emailVerified=true`, the user is routed to `/verify-email` and can resend the verification email or refresh status after clicking the link.
+
+---
+
+## 21. Closing Statement
 
 The frontend work was not “just a website.” It was the product layer that made the Phase 9 forensic backend understandable: upload audio, see a real waveform, read four separate evidence checks, and get honest manual-review guidance. The deployment split — **Vercel for UI**, **DigitalOcean for inference** — matches the constraints of each platform: static/SSR frontend on the edge, heavy PyTorch + WavLM API on a VM. The main lesson from production was architectural: **never route large audio through Vercel serverless proxies**; let the browser talk to the inference API directly, and keep the wording aligned with experimental forensic evidence — not a fake/real certificate.
 

@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
+import { needsEmailVerification } from "@/lib/auth-security"
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -11,6 +12,10 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!loading && !user) {
       router.replace("/signin")
+      return
+    }
+    if (!loading && needsEmailVerification(user)) {
+      router.replace("/verify-email")
     }
   }, [user, loading, router])
 
@@ -23,6 +28,10 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) {
+    return null
+  }
+
+  if (needsEmailVerification(user)) {
     return null
   }
 

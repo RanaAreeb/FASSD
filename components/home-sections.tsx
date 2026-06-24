@@ -441,10 +441,17 @@ export function HomeUseCasesSection() {
               <h2 className="text-3xl sm:text-4xl font-orbitron font-bold">Where teams apply screening</h2>
             </div>
           </Reveal>
-          <Reveal direction="right" delay={0.08} className="text-sm text-muted-foreground max-w-md leading-relaxed">
+          <Reveal direction="right" delay={0.08} className="text-sm text-muted-foreground max-w-md leading-relaxed space-y-3">
             <p>
               Always pair model output with human judgment — suitable for FYP demos, workshops, and media workflows.
             </p>
+            <Link
+              href="/case-studies"
+              className="inline-flex items-center gap-1.5 text-primary font-medium hover:underline"
+            >
+              Real-world case studies
+              <ChevronRight className="w-4 h-4" />
+            </Link>
           </Reveal>
         </div>
 

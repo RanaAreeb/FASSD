@@ -23,12 +23,20 @@ export function inferenceFetchErrorMessage(err: unknown): string {
     ].join(" ")
   }
   if (msg === "Failed to fetch" || msg.includes("NetworkError") || msg.includes("Load failed")) {
+    const localHint =
+      typeof window !== "undefined" &&
+      (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+        ? " For local dev: keep the backend running on port 8000, set INFERENCE_PROXY_TARGET=http://127.0.0.1:8000 in .env.local, restart npm run dev, and confirm http://127.0.0.1:8000/health returns ready_for_analyze: true."
+        : ""
     return [
       "Cannot reach the inference API.",
-      "1) Confirm the DigitalOcean API is running and /health returns ready_for_analyze: true.",
+      "1) Confirm the API is running and /health returns ready_for_analyze: true.",
       "2) On Vercel, set INFERENCE_PROXY_TARGET=https://api.yourdomain.com and redeploy.",
-      "3) On the backend, set CORS_ALLOW_ORIGINS to your frontend domain (e.g. https://www.deepfakedetection.dev).",
-    ].join(" ")
+      "3) On the backend, set CORS_ALLOW_ORIGINS to your frontend domain.",
+      localHint,
+    ]
+      .filter(Boolean)
+      .join(" ")
   }
   return msg || "Unexpected error"
 }

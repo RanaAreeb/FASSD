@@ -24,9 +24,18 @@ function isPathAllowed(method: string, pathSegments: string[]): boolean {
   return false
 }
 
+function requiresFirebaseUser(method: string, pathSegments: string[]): boolean {
+  return method === "POST" || isReportDownloadPath(pathSegments)
+}
+
 async function proxy(request: NextRequest, pathSegments: string[]) {
   if (!isPathAllowed(request.method, pathSegments)) {
     return NextResponse.json({ detail: "Forbidden inference path." }, { status: 403 })
+  }
+
+  const authorization = request.headers.get("authorization")
+  if (requiresFirebaseUser(request.method, pathSegments) && !authorization) {
+    return NextResponse.json({ detail: "You must be signed in to use inference." }, { status: 401 })
   }
 
   const path = pathSegments.join("/")
@@ -35,9 +44,8 @@ async function proxy(request: NextRequest, pathSegments: string[]) {
   const headers = new Headers()
   const contentType = request.headers.get("content-type")
   if (contentType) headers.set("content-type", contentType)
-  const authorization = request.headers.get("authorization")
   if (authorization) headers.set("authorization", authorization)
-  if (API_KEY) headers.set("X-API-Key", API_KEY)
+  if (API_KEY && !authorization) headers.set("X-API-Key", API_KEY)
 
   const init: RequestInit = {
     method: request.method,

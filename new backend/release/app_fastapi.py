@@ -25,6 +25,7 @@ from src.security import (
     stream_upload_to_temp,
     validate_upload_filename,
 )
+from src.audio_quality import InvalidAudioInput, validate_audio_for_inference
 from src.report_paths import resolve_json_report, resolve_pdf_report, sanitize_case_id
 
 from src.app_report_formatting import (
@@ -246,6 +247,46 @@ def _attach_analysis_reports(
     }
 
 
+def _invalid_input_payload(exc: InvalidAudioInput, *, file_label: str) -> dict[str, Any]:
+    if exc.code == "animal_voice":
+        title = "Out of scope — animal / non-human audio"
+        voice_text = "Animal and non-human sounds are not analyzed by this system."
+        recommendation = "Upload a clear human speech recording between 5 seconds and 5 minutes."
+    else:
+        title = "Upload not analyzed"
+        voice_text = "This file is not suitable for speech deepfake analysis."
+        recommendation = "Please upload a clear human speech recording between 5 seconds and 5 minutes."
+
+    return {
+        "processing_status": "invalid_input",
+        "invalid_input_code": exc.code,
+        "error_message": exc.message,
+        "file_name": file_label,
+        "duration_sec": exc.metadata.get("duration_sec"),
+        "quality_metrics": exc.metadata,
+        "manual_review_required": False,
+        "user_summary": {
+            "status_title": title,
+            "severity_level": "unavailable",
+            "voice_origin_text": voice_text,
+            "forensic_indicator_summary": exc.message,
+            "recommendation_text": recommendation,
+            "recommendation_level": "none",
+            "confidence_text": "No model verdict was produced — input is out of scope.",
+            "plain_language_explanation": exc.message,
+        },
+        "evidence_axis_cards": [
+            {
+                "axis_name": "Input scope gate",
+                "status": "Unavailable",
+                "user_text": exc.message,
+                "score_text": f"Reason: {exc.code}",
+            }
+        ],
+        "safety": safety_banner(),
+    }
+
+
 @app.get("/reports/{case_id}/pdf")
 async def download_pdf_report(
     case_id: str,
@@ -329,6 +370,7 @@ async def analyze_audio(
     try:
         tmp_path = await stream_upload_to_temp(upload, suffix)
         file_label = upload.filename or tmp_path.name
+        quality_metrics = validate_audio_for_inference(tmp_path)
 
         phase9c = analyze_audio_file(
             audio_path=str(tmp_path),
@@ -344,6 +386,7 @@ async def analyze_audio(
             return_top_segments=return_top_segments,
             save_report_path=None,
         )
+        payload["quality_metrics"] = quality_metrics
 
         if reports_enabled:
             _attach_analysis_reports(
@@ -353,6 +396,8 @@ async def analyze_audio(
                 tmp_path=tmp_path,
                 return_top_segments=return_top_segments,
             )
+    except InvalidAudioInput as exc:
+        payload = _invalid_input_payload(exc, file_label=file_label)
     except Exception as exc:
         payload = {
             "processing_status": "error",

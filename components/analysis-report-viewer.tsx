@@ -19,6 +19,7 @@ import {
   type ReportViewModel,
 } from "@/lib/report-view-model"
 import { downloadAnalysisReport } from "@/lib/inference-client"
+import { softenForensicCopy, FORENSIC_DISCLAIMER } from "@/lib/copy-safety"
 import { ChevronDown, ChevronUp, FileDown, FileJson, Loader2 } from "lucide-react"
 
 const EVIDENCE_BORDER: Record<string, string> = {
@@ -90,9 +91,9 @@ export function AnalysisReportViewer({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto p-0 gap-0">
         <DialogHeader className="p-6 pb-4 border-b border-border/50 sticky top-0 bg-background/95 backdrop-blur z-10">
-          <DialogTitle className="text-xl font-orbitron">Analysis report</DialogTitle>
+          <DialogTitle className="text-xl font-orbitron">Technical report & export</DialogTitle>
           <DialogDescription className="text-left">
-            {viewModel?.filename ?? filename ?? "Full Phase 9 evidence breakdown"}
+            {viewModel?.filename ?? filename ?? "Same analysis as the summary — with technical metrics and raw JSON"}
           </DialogDescription>
         </DialogHeader>
 
@@ -114,22 +115,22 @@ export function AnalysisReportViewer({
             <>
               <Card className="border-l-4 border-l-primary bg-card/80">
                 <CardContent className="p-5 space-y-2">
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground">{viewModel.statusTitle}</p>
-                  <h3 className="text-lg font-semibold leading-snug">{viewModel.voiceOriginText}</h3>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">{softenForensicCopy(viewModel.statusTitle)}</p>
+                  <h3 className="text-lg font-semibold leading-snug">{softenForensicCopy(viewModel.voiceOriginText)}</h3>
                   {viewModel.forensicIndicatorSummary && (
-                    <p className="text-sm text-muted-foreground">{viewModel.forensicIndicatorSummary}</p>
+                    <p className="text-sm text-muted-foreground">{softenForensicCopy(viewModel.forensicIndicatorSummary)}</p>
                   )}
                   {viewModel.highlightedSegmentText && (
-                    <p className="text-sm text-muted-foreground">{viewModel.highlightedSegmentText}</p>
+                    <p className="text-sm text-muted-foreground">{softenForensicCopy(viewModel.highlightedSegmentText)}</p>
                   )}
                   {viewModel.recommendation && (
                     <p className="text-sm">
                       <span className="font-semibold">Recommendation: </span>
-                      {viewModel.recommendation}
+                      {softenForensicCopy(viewModel.recommendation)}
                     </p>
                   )}
                   {viewModel.confidenceText && (
-                    <p className="text-xs text-muted-foreground">{viewModel.confidenceText}</p>
+                    <p className="text-xs text-muted-foreground">{softenForensicCopy(viewModel.confidenceText)}</p>
                   )}
                 </CardContent>
               </Card>
@@ -157,7 +158,10 @@ export function AnalysisReportViewer({
               )}
 
               <div>
-                <h4 className="text-sm font-semibold mb-3">Axis probabilities</h4>
+                <h4 className="text-sm font-semibold mb-1">Axis screening scores</h4>
+                <p className="text-[11px] text-muted-foreground mb-3">
+                  Scores are capped at 96% max (never 100%). Evidence band matches the indicator cards and is not a final verdict.
+                </p>
                 <div className="grid sm:grid-cols-2 gap-3">
                   {viewModel.axisMetrics.map((metric) => (
                     <div
@@ -166,7 +170,7 @@ export function AnalysisReportViewer({
                     >
                       <p className="text-xs text-muted-foreground">{metric.label}</p>
                       <p className="text-lg font-mono font-semibold mt-1">{metric.probability}</p>
-                      <p className="text-[11px] text-muted-foreground mt-1">Strength: {metric.strength}</p>
+                      <p className="text-[11px] text-muted-foreground mt-1">Evidence band: {metric.strength}</p>
                     </div>
                   ))}
                 </div>
@@ -207,9 +211,11 @@ export function AnalysisReportViewer({
 
               {viewModel.safetyWording && (
                 <p className="text-xs text-muted-foreground leading-relaxed border-t border-border/40 pt-4">
-                  {viewModel.safetyWording}
+                  {softenForensicCopy(viewModel.safetyWording)}
                 </p>
               )}
+
+              <p className="text-xs text-muted-foreground">{FORENSIC_DISCLAIMER}</p>
 
               <div className="flex flex-col sm:flex-row gap-2">
                 <Button
@@ -292,7 +298,7 @@ function EvidenceCard({ card }: { card: EvidenceAxisCard }) {
           {status}
         </Badge>
       </div>
-      <p className="text-sm text-muted-foreground leading-relaxed">{card.user_text}</p>
+      <p className="text-sm text-muted-foreground leading-relaxed">{softenForensicCopy(card.user_text)}</p>
       {card.score_text && (
         <p className="text-xs text-muted-foreground/90 mt-2 pt-2 border-t border-border/40">{card.score_text}</p>
       )}

@@ -34,9 +34,17 @@ from phase9d_p6_partial_report_contract import (  # noqa: E402
 )
 
 from src.evidence_calibration import (  # noqa: E402
+    BAND_HIGH,
+    BAND_LOW,
+    BAND_MEDIUM,
+    evidence_band,
     format_evidence_band_text,
     format_technical_raw_score,
     enrich_axis_evidence_display,
+)
+from src.phase8_fusion.phase8f_fusion_rules import (  # noqa: E402
+    ELEVATED_STRENGTHS,
+    classify_evidence_strength,
 )
 
 # Dark-theme HTML card palette (explicit contrast for Gradio dark UI)
@@ -49,9 +57,9 @@ _BORDER_DETECTED = "#f97316"
 _BORDER_CANDIDATE = "#eab308"
 _BORDER_CLEAR = "#22c55e"
 _BORDER_UNAVAILABLE = "#94a3b8"
-APP_NAME = "Deepfake Audio Detector — Local Demo"
+APP_NAME = "Voice Integrity Screening Report (Local Demo)"
 RESEARCH_PROJECT_NAME = "Forensic Acoustic for Synthetic Speech Detection"
-APP_SUBTITLE = "AI-generated, replayed, and partially manipulated audio evidence review."
+APP_SUBTITLE = "Experimental multi-axis voice screening for research and manual review only."
 _ELEVATED = frozenset({"moderate", "high", "elevated_partial_fabrication_indicator"})
 APP_PHASE = "Phase 9E-P4B + Phase 6 calibration bands"
 EVIDENCE_STRENGTH_LABEL = "Evidence strength"
@@ -633,18 +641,31 @@ def _axis_card_from_evidence(
     strength = str(evidence.get("evidence_strength", "")).lower()
     prob = evidence.get("probability")
     axis_key = _axis_key_from_name(axis_name)
-    score_text = _format_score_text(prob, axis=axis_key, prediction_success=True) if isinstance(prob, (int, float)) else ""
+    th_raw = evidence.get("threshold_candidate")
+    th_val = float(th_raw) if isinstance(th_raw, (int, float)) else None
+    prob_f = float(prob) if isinstance(prob, (int, float)) else None
+    score_text = _format_score_text(prob, axis=axis_key, prediction_success=True) if prob_f is not None else ""
+    fusion_strength = classify_evidence_strength(prob_f, th_val)
+    band = evidence_band(axis_key, prob_f, prediction_success=True)
 
     elevated = (
         "elevated" in label
         or strength in _ELEVATED
         or label in ("elevated_indicator", "suspicious_mixer_channel_experimental")
+        or fusion_strength in ELEVATED_STRENGTHS
     )
     if elevated:
         status, severity = "Detected", "review"
         user_text = (
             f"Experimental indicators were observed on this axis. "
             f"This is not conclusive proof; manual review is recommended."
+        )
+    elif fusion_strength == "borderline" or band in (BAND_MEDIUM, BAND_HIGH):
+        status, severity = "Review candidate", "clear_candidate"
+        pct = f"{prob_f * 100:.1f}%" if prob_f is not None else "elevated"
+        user_text = (
+            f"Screening score is {pct} on this axis — above typical human baselines but below the "
+            f"detection threshold. This is not proof of manipulation; consider manual review."
         )
     else:
         status, severity = "Not detected", "clear"
@@ -808,6 +829,15 @@ def build_voice_origin_result(response: dict[str, Any]) -> dict[str, Any]:
 
     prob_txt = format_evidence_band_text("origin", prob, prediction_success=True)
     technical_prob = format_technical_raw_score(prob)
+    fusion_strength = classify_evidence_strength(
+        float(prob) if isinstance(prob, (int, float)) else None,
+        th,
+    )
+    origin_band = evidence_band(
+        "origin",
+        float(prob) if isinstance(prob, (int, float)) else None,
+        prediction_success=True,
+    )
 
     if ssl_detected and processing_high:
         return {
@@ -846,6 +876,46 @@ def build_voice_origin_result(response: dict[str, Any]) -> dict[str, Any]:
             "evidence_sources": evidence_sources,
             "explanation": (
                 "Replay or channel processing can reduce reliability of AI-vs-human origin cues."
+            ),
+            "ssl_origin_detected": False,
+        }
+
+    origin_clearly_human = (
+        origin_band == BAND_LOW
+        and fusion_strength == "low"
+        and isinstance(prob, (int, float))
+        and float(prob) < 0.35
+    )
+    if origin_clearly_human and not processing_high:
+        return {
+            "origin_label": "likely_human",
+            "display_text": "Voice origin: Likely human",
+            "confidence_text": prob_txt,
+            "evidence_source": evidence_source,
+            "evidence_sources": evidence_sources,
+            "explanation": (
+                "The active SSL origin model does not show strong AI-origin indicators. "
+                "This does not prove authenticity."
+            ),
+            "ssl_origin_detected": False,
+        }
+
+    if (
+        not ssl_detected
+        and not processing_high
+        and (fusion_strength == "borderline" or origin_band in (BAND_MEDIUM, BAND_HIGH))
+        and isinstance(prob, (int, float))
+    ):
+        pct = float(prob) * 100.0
+        return {
+            "origin_label": "inconclusive",
+            "display_text": "Voice origin: Inconclusive (elevated origin indicators)",
+            "confidence_text": prob_txt,
+            "evidence_source": evidence_source,
+            "evidence_sources": evidence_sources,
+            "explanation": (
+                f"The origin screening score is {pct:.1f}% — elevated relative to typical human speech "
+                f"but below the detection threshold. This is not proof of AI generation; manual review is advised."
             ),
             "ssl_origin_detected": False,
         }
@@ -911,6 +981,18 @@ def build_forensic_indicator_summary(response: dict[str, Any], cards: list[dict[
                 "Segment-level candidate available for optional review "
                 "(full P5B cascade not active in release app)."
             )
+        origin = response.get("origin_evidence") or {}
+        origin_prob = origin.get("probability")
+        if isinstance(origin_prob, (int, float)):
+            th_raw = origin.get("threshold_candidate")
+            th_val = float(th_raw) if isinstance(th_raw, (int, float)) else None
+            fusion_strength = classify_evidence_strength(float(origin_prob), th_val)
+            band = evidence_band("origin", float(origin_prob), prediction_success=True)
+            if fusion_strength == "borderline" or band in (BAND_MEDIUM, BAND_HIGH):
+                return (
+                    f"Elevated origin screening score ({float(origin_prob) * 100:.1f}%) — "
+                    f"below detection threshold; not conclusive."
+                )
         return "No strong manipulation indicators detected"
     return "; ".join(dict.fromkeys(parts))
 
@@ -934,6 +1016,15 @@ def build_recommendation_level(
         return "review_recommended"
     if voice.get("origin_label") in ("likely_ai_generated", "likely_ai_generated_with_processing"):
         return "review_recommended"
+    origin = response.get("origin_evidence") or {}
+    origin_prob = origin.get("probability")
+    if voice.get("origin_label") == "inconclusive" and isinstance(origin_prob, (int, float)):
+        th_raw = origin.get("threshold_candidate")
+        th_val = float(th_raw) if isinstance(th_raw, (int, float)) else None
+        fusion_strength = classify_evidence_strength(float(origin_prob), th_val)
+        band = evidence_band("origin", float(origin_prob), prediction_success=True)
+        if fusion_strength == "borderline" or band in (BAND_MEDIUM, BAND_HIGH):
+            return "optional_review"
     if _partial_segment_candidate_only(pf) and _has_candidate_segment(pf):
         return "optional_review"
     return "none"
@@ -1148,7 +1239,7 @@ def build_user_result_summary(response: dict[str, Any]) -> dict[str, Any]:
 def gradio_segments_table_title(response: dict[str, Any]) -> str:
     pf = response.get("partial_fabrication") or {}
     if pf.get("show_segments_table") is False:
-        return "Partial evidence not detected — no segments listed"
+        return "Partial evidence not detected: no segments listed"
     summary = build_user_result_summary(response)
     if summary.get("recommendation_level") == "review_recommended" or summary.get(
         "strong_forensic_detected"
@@ -1327,12 +1418,12 @@ def gradio_suspicious_segments_table(response: dict[str, Any]) -> list[list[Any]
         prob_txt = (
             format_evidence_band_text("partial_segment", prob, prediction_success=True)
             if isinstance(prob, (int, float))
-            else "—"
+            else "n/a"
         )
         rows.append(
             [
                 seg.get("rank"),
-                f"{format_time_mmss(start)} – {format_time_mmss(end)}",
+                f"{format_time_mmss(start)} to {format_time_mmss(end)}",
                 prob_txt,
                 rec_label if seg.get("manual_review_recommended", True) else "Optional",
             ]

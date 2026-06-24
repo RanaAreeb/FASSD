@@ -98,8 +98,13 @@ def format_technical_raw_score(
     label: str = "Uncalibrated model score",
 ) -> str:
     if probability is None or not isinstance(probability, (int, float)):
-        return f"{label}: —"
-    return f"{label}: {float(probability):.3f}"
+        return f"{label}: n/a"
+    p = float(probability)
+    if p >= 0.96:
+        return f"{label}: 0.960 (screening cap)"
+    if p <= 0.01:
+        return f"{label}: 0.010 (screening floor)"
+    return f"{label}: {p:.3f}"
 
 
 def enrich_axis_evidence_display(

@@ -1,4 +1,9 @@
+import { formatScreeningScore, formatScreeningScoreFromPercent, capScreeningPercent } from "@/lib/copy-safety"
 import { getAttackTypeForDeepfake } from "@/lib/firestore"
+import {
+  applyElevatedOriginSafetyCopy,
+  hasElevatedOriginContradiction,
+} from "@/lib/forensic-consistency"
 import {
   createEmptyDetectionResult,
   type DetectionResult,
@@ -32,6 +37,8 @@ export type LegacyAnalyzeResponse = {
 
 export type Phase9AnalyzeResponse = {
   processing_status?: string
+  invalid_input_code?: string
+  quality_metrics?: Record<string, unknown>
   error_message?: string
   case_id?: string
   phase?: string
@@ -136,8 +143,8 @@ function axisConfidencePct(data: Phase9AnalyzeResponse): number {
   if (!values.length) return 50
   const max = Math.max(...values)
   const label = data.voice_origin_result?.origin_label ?? ""
-  if (label === "likely_human") return Math.round(Math.max(0, Math.min(100, (1 - (origin ?? 0.5)) * 100)))
-  return Math.round(Math.max(0, Math.min(100, max * 100)))
+  if (label === "likely_human") return Math.round(capScreeningPercent((1 - (origin ?? 0.5)) * 100))
+  return Math.round(capScreeningPercent(max * 100))
 }
 
 export function mapPhase9Response(
@@ -145,6 +152,65 @@ export function mapPhase9Response(
   file: File,
   processingTime: number,
 ): DetectionResult {
+  if (data.processing_status === "invalid_input") {
+    const summary = data.user_summary ?? {}
+    const isAnimalVoice = data.invalid_input_code === "animal_voice"
+    const durationSec = data.duration_sec
+    const phase9: Phase9ResultView = {
+      caseId: data.case_id,
+      phase: data.phase ?? "input_quality_gate",
+      statusTitle: summary.status_title ?? (isAnimalVoice ? "Out of scope — animal audio" : "Upload not analyzed"),
+      severityLevel: summary.severity_level ?? "unavailable",
+      processingStatus: "invalid_input",
+      durationSec: typeof durationSec === "number" ? durationSec : undefined,
+      voiceOriginText:
+        summary.voice_origin_text ??
+        (isAnimalVoice
+          ? "Animal and non-human sounds are not analyzed by this system."
+          : "This file is not suitable for speech deepfake analysis."),
+      voiceOriginLabel: "invalid_input",
+      forensicIndicatorSummary:
+        summary.forensic_indicator_summary ?? data.error_message ?? "Invalid audio input.",
+      recommendation:
+        summary.recommendation_text ??
+        (isAnimalVoice
+          ? "Upload a clear human speech recording instead."
+          : "Please upload a clear human speech recording between 5 seconds and 5 minutes."),
+      recommendationLevel: summary.recommendation_level ?? "none",
+      highlightedSegmentText: undefined,
+      confidenceText: summary.confidence_text ?? "No model verdict was produced.",
+      plainLanguageExplanation:
+        summary.plain_language_explanation ?? data.error_message ?? "Invalid audio input.",
+      evidenceAxisCards: data.evidence_axis_cards ?? [],
+      manualReviewRequired: false,
+      safetyWording: data.safety?.wording,
+      segmentRows: [],
+      segmentHighlights: [],
+    }
+
+    return {
+      ...createEmptyDetectionResult(),
+      backend: "phase9",
+      phase9,
+      reportPayload: data as unknown as Record<string, unknown>,
+      filename: file.name,
+      fileSize: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+      isDeepfake: false,
+      attackType: isAnimalVoice ? "Out of scope" : "Invalid input",
+      verdictKind: "borderline",
+      confidence: 0,
+      processingTime,
+      duration: typeof durationSec === "number" ? formatMmSs(durationSec) : "—",
+      overallExplanation: phase9.plainLanguageExplanation,
+      details: {
+        spectralAnalysis: 0,
+        temporalConsistency: 0,
+        neuralNetworkScore: 0,
+        artifactDetection: 0,
+      },
+    }
+  }
+
   if (data.processing_status === "error" || data.error_message) {
     return {
       ...createEmptyDetectionResult(),
@@ -181,7 +247,7 @@ export function mapPhase9Response(
   const segmentRows = topSegments.map((seg) => ({
     rank: seg.rank ?? 0,
     range: formatSegmentRange(seg.start_sec, seg.end_sec),
-    score: typeof seg.probability === "number" ? `${(seg.probability * 100).toFixed(1)}%` : "—",
+    score: typeof seg.probability === "number" ? formatScreeningScore(seg.probability) : "—",
     note: pf?.segment_recommendation_label ?? "Worth a listen",
   }))
   const segmentHighlights = topSegments
@@ -194,41 +260,51 @@ export function mapPhase9Response(
       label: formatSegmentRange(seg.start_sec, seg.end_sec),
     }))
 
-  const phase9: Phase9ResultView = {
-    caseId: data.case_id,
-    phase: data.phase,
-    statusTitle: summary.status_title ?? (data.processing_status === "error" ? "Analysis incomplete" : "Analysis completed"),
-    severityLevel: summary.severity_level ?? "clear",
-    processingStatus: data.processing_status ?? "ok",
-    durationSec: typeof durationSec === "number" ? durationSec : undefined,
-    voiceOriginText: summary.voice_origin_text ?? voice.display_text ?? "Voice origin: Inconclusive",
-    voiceOriginLabel: label,
-    forensicIndicatorSummary:
-      summary.forensic_indicator_summary ?? data.forensic_indicator_summary ?? "",
-    recommendation: summary.recommendation_text ?? data.recommendation ?? "",
-    recommendationLevel: summary.recommendation_level ?? data.recommendation_level ?? "none",
-    highlightedSegmentText: summary.highlighted_segment_text,
-    confidenceText: summary.confidence_text ?? voice.confidence_text,
-    plainLanguageExplanation: summary.plain_language_explanation ?? voice.explanation,
-    evidenceAxisCards: cards,
-    manualReviewRequired: data.manual_review_required !== false,
-    safetyWording: data.safety?.wording,
-    segmentRows,
-    segmentHighlights,
-    reports: data.reports
-      ? {
-          caseId: data.reports.case_id ?? data.case_id ?? "",
-          jsonAvailable: data.reports.json_available === true || !!data.saved_report_path,
-          pdfAvailable: data.reports.pdf_available === true || !!data.pdf_report_path,
-        }
-      : data.case_id
+  const phase9: Phase9ResultView = applyElevatedOriginSafetyCopy(
+    {
+      caseId: data.case_id,
+      phase: data.phase,
+      statusTitle:
+        summary.status_title ??
+        (data.processing_status === "error" ? "Analysis incomplete" : "Analysis completed"),
+      severityLevel:
+        hasElevatedOriginContradiction(originProb, summary.voice_origin_text ?? voice.display_text)
+          ? "clear_candidate"
+          : (summary.severity_level ?? "clear"),
+      processingStatus: data.processing_status ?? "ok",
+      durationSec: typeof durationSec === "number" ? durationSec : undefined,
+      voiceOriginText: summary.voice_origin_text ?? voice.display_text ?? "Voice origin: Inconclusive",
+      voiceOriginLabel: label,
+      forensicIndicatorSummary:
+        summary.forensic_indicator_summary ?? data.forensic_indicator_summary ?? "",
+      recommendation: summary.recommendation_text ?? data.recommendation ?? "",
+      recommendationLevel: summary.recommendation_level ?? data.recommendation_level ?? "none",
+      highlightedSegmentText: summary.highlighted_segment_text,
+      confidenceText: summary.confidence_text ?? voice.confidence_text,
+      plainLanguageExplanation: summary.plain_language_explanation ?? voice.explanation,
+      evidenceAxisCards: cards,
+      manualReviewRequired: data.manual_review_required !== false,
+      safetyWording: data.safety?.wording,
+      segmentRows,
+      segmentHighlights,
+      reports: data.reports
         ? {
-            caseId: data.case_id,
-            jsonAvailable: !!data.saved_report_path,
-            pdfAvailable: !!data.pdf_report_path,
+            caseId: data.reports.case_id ?? data.case_id ?? "",
+            jsonAvailable: data.reports.json_available === true || !!data.saved_report_path,
+            pdfAvailable: data.reports.pdf_available === true || !!data.pdf_report_path,
           }
-        : undefined,
-  }
+        : data.case_id
+          ? {
+              caseId: data.case_id,
+              jsonAvailable: !!data.saved_report_path,
+              pdfAvailable: !!data.pdf_report_path,
+            }
+          : undefined,
+    },
+    originProb,
+  )
+
+  const resolvedLabel = phase9.voiceOriginLabel
 
   const envReasons: string[] = []
   const specReasons: string[] = []
@@ -257,7 +333,7 @@ export function mapPhase9Response(
     fileSize: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
     isDeepfake,
     attackType,
-    verdictKind: originLabelToScreening(isDeepfake, label),
+    verdictKind: originLabelToScreening(isDeepfake, resolvedLabel),
     confidence,
     processingTime,
     duration: typeof durationSec === "number" ? formatMmSs(durationSec) : "—",
@@ -274,10 +350,10 @@ export function mapPhase9Response(
       attackProbs: [1 - originProb, originProb, mixerProb, replayProb],
     },
     details: {
-      spectralAnalysis: Math.round(originProb * 100),
-      temporalConsistency: Math.round(replayProb * 100),
-      neuralNetworkScore: Math.round(mixerProb * 100),
-      artifactDetection: Math.round(partialProb * 100),
+      spectralAnalysis: Math.round(capScreeningPercent(originProb * 100)),
+      temporalConsistency: Math.round(capScreeningPercent(replayProb * 100)),
+      neuralNetworkScore: Math.round(capScreeningPercent(mixerProb * 100)),
+      artifactDetection: Math.round(capScreeningPercent(partialProb * 100)),
     },
   }
 }

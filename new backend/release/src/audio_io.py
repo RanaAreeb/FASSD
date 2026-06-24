@@ -21,10 +21,13 @@ SUPPORTED_EXTENSIONS = {
     ".aac",
     ".mp4",
     ".webm",
+    ".amr",
+    ".3gp",
+    ".3gpp",
     ".mkv",
     ".mov",
 }
-_VIDEO_EXTENSIONS = {".mp4", ".webm", ".mkv", ".mov"}
+_FFMPEG_FALLBACK_EXTENSIONS = {".mp4", ".webm", ".mkv", ".mov", ".amr", ".3gp", ".3gpp"}
 
 
 class AudioLoadError(Exception):
@@ -135,12 +138,18 @@ def load_audio(path: str, target_sample_rate: int = TARGET_SAMPLE_RATE) -> tuple
             y, sr = librosa.load(str(resolved), sr=None, mono=True)
             y = np.asarray(y, dtype=np.float64)
         except Exception as exc:
-            if resolved.suffix.lower() in _VIDEO_EXTENSIONS:
+            if resolved.suffix.lower() in _FFMPEG_FALLBACK_EXTENSIONS:
                 try:
                     y, sr = _load_via_ffmpeg(resolved, target_sample_rate)
+                except FileNotFoundError as ff_exc:
+                    raise AudioLoadError(
+                        "Could not read this audio format. Install ffmpeg on the server, "
+                        "or upload WAV/MP3. Browser recordings should be converted to WAV before upload."
+                    ) from ff_exc
                 except Exception as ff_exc:
                     raise AudioLoadError(
-                        f"Could not read audio/video container: {ff_exc}"
+                        f"Could not read audio container ({resolved.suffix}). "
+                        f"For WebM/AMR/3GP, install ffmpeg or upload WAV/MP3: {ff_exc}"
                     ) from ff_exc
             else:
                 raise AudioLoadError(f"Could not read audio: {exc}") from exc

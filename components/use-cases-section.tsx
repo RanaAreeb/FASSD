@@ -27,7 +27,7 @@ export function UseCasesSection() {
       description: "Ensure authenticity of audio content and interviews",
       challenge: "Deepfake audio spreading misinformation and fake news",
       solution: "Automated content verification before publication",
-      impact: "100% authentic content guarantee for subscribers",
+      impact: "Stronger pre-publication screening for subscribers",
       icon: Tv,
       color: "from-blue-500 to-cyan-600",
       features: ["Content Verification", "Source Authentication", "Integrity Scoring"],

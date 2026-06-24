@@ -12,12 +12,15 @@ from fastapi import Header, HTTPException, UploadFile
 from jwt import PyJWKClient
 
 ALLOWED_AUDIO_SUFFIXES = frozenset(
-    {".wav", ".mp3", ".flac", ".m4a", ".ogg", ".aac", ".webm"}
+    {".wav", ".mp3", ".flac", ".m4a", ".ogg", ".aac", ".webm", ".amr", ".3gp", ".3gpp"}
 )
 MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(50 * 1024 * 1024)))
 FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID", "").strip()
 INFERENCE_API_KEY = os.getenv("INFERENCE_API_KEY", "").strip()
 REQUIRE_INFERENCE_AUTH = os.getenv("REQUIRE_INFERENCE_AUTH", "false").lower() in ("1", "true", "yes")
+REQUIRE_VERIFIED_EMAIL_FOR_BEARER = os.getenv(
+    "REQUIRE_VERIFIED_EMAIL_FOR_BEARER", "true"
+).lower() in ("1", "true", "yes")
 
 
 @lru_cache(maxsize=1)
@@ -44,6 +47,8 @@ def verify_firebase_bearer(authorization: str | None) -> str | None:
             audience=FIREBASE_PROJECT_ID,
             issuer=f"https://securetoken.google.com/{FIREBASE_PROJECT_ID}",
         )
+        if REQUIRE_VERIFIED_EMAIL_FOR_BEARER and payload.get("email_verified") is not True:
+            return None
         uid = payload.get("sub")
         return str(uid) if uid else None
     except Exception:

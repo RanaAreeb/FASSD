@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
+import { needsEmailVerification } from "@/lib/auth-security"
 
 interface AuthFormProps {
   mode: "signin" | "signup"
@@ -23,7 +24,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   useEffect(() => {
     if (!authLoading && user) {
-      router.replace("/dashboard")
+      router.replace(needsEmailVerification(user) ? "/verify-email" : "/dashboard")
     }
   }, [user, authLoading, router])
   const [error, setError] = useState("")
@@ -40,15 +41,15 @@ export function AuthForm({ mode }: AuthFormProps) {
     setError("")
     try {
       if (mode === "signin") {
-        await signIn(formData.email, formData.password)
-        router.push("/dashboard")
+        const signedInUser = await signIn(formData.email, formData.password)
+        router.push(needsEmailVerification(signedInUser) ? "/verify-email" : "/dashboard")
       } else {
         if (formData.password !== formData.confirmPassword) {
           setError("Passwords do not match")
           return
         }
         await signUp(formData.email, formData.password, formData.name)
-        router.push("/dashboard")
+        router.push("/verify-email")
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Authentication failed"
@@ -82,7 +83,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           <p className="text-muted-foreground text-lg font-light">
             {mode === "signin"
               ? "Sign in to your deepfake detection dashboard"
-              : "Create your account to start detecting deepfake audio"}
+              : "Create your account. Email users verify ownership before dashboard access"}
           </p>
         </div>
 
@@ -94,7 +95,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             <CardDescription className="text-center text-base">
               {mode === "signin"
                 ? "Enter your credentials to continue"
-                : "Join thousands protecting against audio manipulation"}
+                : "Verify your email ownership before using protected analysis tools"}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">

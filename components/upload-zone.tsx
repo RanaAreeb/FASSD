@@ -4,24 +4,30 @@ import type React from "react"
 import { useCallback, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { AudioLines, FileUp, Shield } from "lucide-react"
-import { validateAudioFile } from "@/lib/upload-limits"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { AudioLines, FileUp, FlaskConical, Mic, Shield, TestTube2 } from "lucide-react"
+import { validateAudioFileForUpload } from "@/lib/upload-limits"
+import { FORENSIC_DISCLAIMER } from "@/lib/copy-safety"
+import { AudioRecorder } from "@/components/audio-recorder"
+import { TestSamplesPanel } from "@/components/test-samples-panel"
+import { AiLabPanel } from "@/components/ai-lab-panel"
 
 interface UploadZoneProps {
   onFileUpload: (file: File) => void
   isProcessing: boolean
 }
 
-const FORMATS = ["WAV", "MP3", "FLAC", "M4A", "OGG"]
+const FORMATS = ["WAV", "MP3", "FLAC", "M4A", "OGG", "AMR", "3GP", "WEBM"]
 
 export function UploadZone({ onFileUpload, isProcessing }: UploadZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false)
   const [selectedName, setSelectedName] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState("upload")
 
   const handleFile = useCallback(
-    (file: File) => {
-      const validationError = validateAudioFile(file)
+    async (file: File) => {
+      const validationError = await validateAudioFileForUpload(file)
       if (validationError) {
         setUploadError(validationError)
         setSelectedName(null)
@@ -49,7 +55,9 @@ export function UploadZone({ onFileUpload, isProcessing }: UploadZoneProps) {
       e.preventDefault()
       setIsDragOver(false)
       const files = Array.from(e.dataTransfer.files)
-      const audioFile = files.find((f) => f.type.startsWith("audio/") || /\.(wav|mp3|flac|m4a|ogg)$/i.test(f.name))
+      const audioFile = files.find(
+        (f) => f.type.startsWith("audio/") || /\.(wav|mp3|flac|m4a|ogg|aac|webm|amr|3gp|3gpp)$/i.test(f.name),
+      )
       if (audioFile) handleFile(audioFile)
     },
     [handleFile],
@@ -79,60 +87,89 @@ export function UploadZone({ onFileUpload, isProcessing }: UploadZoneProps) {
         }`}
       />
       <div
-        className={`relative glass-morphism border-glow rounded-2xl p-8 sm:p-12 text-center space-y-8 ${
+        className={`relative glass-morphism border-glow rounded-2xl p-6 sm:p-8 text-center space-y-6 ${
           isDragOver ? "border-primary/70 bg-primary/5" : ""
         }`}
       >
-        <div className="mx-auto w-20 h-20 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center glow-effect">
-          <FileUp className="w-9 h-9 text-primary" strokeWidth={1.5} />
-        </div>
-
-        <div className="space-y-2 max-w-md mx-auto">
+        <div className="space-y-2 max-w-lg mx-auto">
           <h3 className="text-2xl font-orbitron font-bold tracking-tight">Submit audio specimen</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Drop a recording for hybrid-model screening. Results include chunk-level voting, environmental cues, and
-            explainable reasoning.
+            Upload, record yourself, try bundled test clips, or generate AI speech for lab testing.
           </p>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-2">
-          {FORMATS.map((fmt) => (
-            <Badge key={fmt} variant="outline" className="font-mono text-[10px] border-border/60">
-              {fmt}
-            </Badge>
-          ))}
-        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full text-left">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+            <TabsTrigger value="upload" className="text-xs sm:text-sm">
+              <FileUp className="w-3.5 h-3.5 mr-1.5" />
+              Upload
+            </TabsTrigger>
+            <TabsTrigger value="record" className="text-xs sm:text-sm">
+              <Mic className="w-3.5 h-3.5 mr-1.5" />
+              Record
+            </TabsTrigger>
+            <TabsTrigger value="samples" className="text-xs sm:text-sm">
+              <TestTube2 className="w-3.5 h-3.5 mr-1.5" />
+              Test clips
+            </TabsTrigger>
+            <TabsTrigger value="lab" className="text-xs sm:text-sm">
+              <FlaskConical className="w-3.5 h-3.5 mr-1.5" />
+              AI lab
+            </TabsTrigger>
+          </TabsList>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <input
-            type="file"
-            accept="audio/*,.wav,.mp3,.flac,.m4a,.ogg"
-            onChange={handleFileSelect}
-            className="hidden"
-            id="audio-upload"
-            disabled={isProcessing}
-          />
-          <label htmlFor="audio-upload">
-            <Button
-              size="lg"
-              className="btn-professional glow-effect font-orbitron tracking-wide px-8 cursor-pointer"
-              disabled={isProcessing}
-              asChild
-            >
-              <span>
-                <AudioLines className="w-4 h-4 mr-2 inline" />
-                Select audio file
-              </span>
-            </Button>
-          </label>
-        </div>
+          <TabsContent value="upload" className="mt-5 space-y-6">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center">
+              <FileUp className="w-7 h-7 text-primary" strokeWidth={1.5} />
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-2">
+              {FORMATS.map((fmt) => (
+                <Badge key={fmt} variant="outline" className="font-mono text-[10px] border-border/60">
+                  {fmt}
+                </Badge>
+              ))}
+            </div>
+
+            <div className="flex justify-center">
+              <input
+                type="file"
+                accept="audio/*,.wav,.mp3,.flac,.m4a,.ogg,.aac,.webm,.amr,.3gp,.3gpp"
+                onChange={handleFileSelect}
+                className="hidden"
+                id="audio-upload"
+                disabled={isProcessing}
+              />
+              <label htmlFor="audio-upload">
+                <Button size="lg" className="btn-professional glow-effect font-orbitron tracking-wide px-8 cursor-pointer" disabled={isProcessing} asChild>
+                  <span>
+                    <AudioLines className="w-4 h-4 mr-2 inline" />
+                    Select audio file
+                  </span>
+                </Button>
+              </label>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="record" className="mt-5">
+            <AudioRecorder onRecorded={handleFile} disabled={isProcessing} />
+          </TabsContent>
+
+          <TabsContent value="samples" className="mt-5">
+            <TestSamplesPanel onSampleSelected={handleFile} disabled={isProcessing} />
+          </TabsContent>
+
+          <TabsContent value="lab" className="mt-5">
+            <AiLabPanel onFileReady={handleFile} disabled={isProcessing} />
+          </TabsContent>
+        </Tabs>
 
         <div className="flex flex-wrap items-center justify-center gap-6 text-[11px] text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
             <Shield className="w-3.5 h-3.5 text-primary/70" />
-            Screening estimate — not legal proof
+            {FORENSIC_DISCLAIMER}
           </span>
-          <span>Max ~50 MB · Mono decode @ 16 kHz</span>
+          <span>5s–5min · Max 50 MB · Human speech only (no animal/ringtone)</span>
         </div>
 
         {selectedName && !isProcessing && (
