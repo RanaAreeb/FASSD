@@ -114,7 +114,7 @@ export function HomeHero() {
 
             <HeroReveal delay={0.38} variants={fadeUp}>
               <p className="text-lg sm:text-xl text-muted-foreground font-light max-w-md pt-2 pl-1 border-l-2 border-primary/50">
-                Synthetic speech screening with four separate integrity checks — built for demos, research, and
+                Synthetic speech screening with four separate integrity checks, built for demos, research, and
                 thesis defense.
               </p>
             </HeroReveal>
@@ -221,7 +221,7 @@ export function HomeIntroSection() {
               <p>
                 The web dashboard calls the Phase 9 FastAPI service in{" "}
                 <code className="text-xs text-foreground bg-muted px-1.5 py-0.5 rounded">new backend/release/</code>
-                — no mock scores. Each upload runs decode, segmentation, four axis models, and multi-axis fusion with
+                No mock scores. Each upload runs decode, segmentation, four axis models, and multi-axis fusion with
                 safe forensic wording.
               </p>
               <p className="text-sm border-l-2 border-muted-foreground/30 pl-4">{PROJECT.disclaimer}</p>
@@ -244,7 +244,7 @@ export function HomeArchitectureBento() {
           <SectionLabel>Architecture</SectionLabel>
           <h2 className="text-3xl sm:text-4xl font-orbitron font-bold">Model & inference at a glance</h2>
           <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
-            Values match the Phase 9 release backend — model registry, segmentation defaults, and candidate
+            Values match the Phase 9 release backend: model registry, segmentation defaults, and candidate
             thresholds.
           </p>
         </Reveal>
@@ -263,7 +263,7 @@ export function HomeArchitectureBento() {
               </h3>
               <p className="text-sm text-muted-foreground mt-4 leading-relaxed max-w-md">
                 Origin (WavLM SSL), replay (acoustic), mixer/channel (acoustic), and partial segments (combined
-                features) — fused into separate indicators, not one binary fake/real verdict.
+                features), fused into separate indicators, not one binary fake/real verdict.
               </p>
             </div>
             <p className="text-xs font-mono text-primary mt-6">release/models/ · joblib + metadata</p>
@@ -443,7 +443,7 @@ export function HomeUseCasesSection() {
           </Reveal>
           <Reveal direction="right" delay={0.08} className="text-sm text-muted-foreground max-w-md leading-relaxed space-y-3">
             <p>
-              Always pair model output with human judgment — suitable for FYP demos, workshops, and media workflows.
+              Always pair model output with human judgment. Suitable for FYP demos, workshops, and media workflows.
             </p>
             <Link
               href="/case-studies"
@@ -503,7 +503,7 @@ export function HomeCtaSection() {
             </motion.div>
             <h2 className="text-3xl sm:text-4xl font-orbitron font-bold mb-4">Upload real audio. Get a real report.</h2>
             <p className="text-muted-foreground leading-relaxed mb-10">
-              Sign in, open the forensic lab, and run your file through the hybrid model — explanations, thresholds,
+              Sign in, open the forensic lab, and run your file through the hybrid model: explanations, thresholds,
               and multiclass hints included.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

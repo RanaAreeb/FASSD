@@ -2,6 +2,7 @@ import { formatScreeningScore, formatScreeningScoreFromPercent, capScreeningPerc
 import { getAttackTypeForDeepfake } from "@/lib/firestore"
 import {
   applyElevatedOriginSafetyCopy,
+  applyClearHumanProfileCopy,
   hasElevatedOriginContradiction,
 } from "@/lib/forensic-consistency"
 import {
@@ -168,7 +169,22 @@ function normalizeEvidenceAxisCards(cards: EvidenceAxisCard[], data: Phase9Analy
     const probability = axisProbabilityForCard(card, data)
     if (probability == null || !Number.isFinite(probability)) return card
 
-    // Always derive score copy from the numeric axis probability so text cannot contradict the score.
+    const isPartialAxis = card.axis_name.toLowerCase().includes("partial")
+    const partialGateNotFired =
+      isPartialAxis &&
+      card.status?.toLowerCase().includes("not detected")
+
+    // For partial axis: when the detection gate says "Not detected", the max_segment_probability
+    // is a raw internal score that does NOT indicate evidence was confirmed. Use the gate outcome
+    // (status) as the authoritative source for the evidence band instead of the raw segment score.
+    if (partialGateNotFired) {
+      return {
+        ...card,
+        score_text: `Screening score: ${formatScreeningScore(probability)} · Evidence strength: Low evidence (gate: Not detected)`,
+      }
+    }
+
+    // For all other axes, derive score copy from the numeric axis probability.
     return {
       ...card,
       score_text: `Screening score: ${formatScreeningScore(probability)} · Evidence strength: ${evidenceStrengthLabel(probability)}`,
@@ -225,7 +241,7 @@ export function mapPhase9Response(
     const phase9: Phase9ResultView = {
       caseId: data.case_id,
       phase: data.phase ?? "input_quality_gate",
-      statusTitle: summary.status_title ?? (isAnimalVoice ? "Out of scope — animal audio" : "Upload not analyzed"),
+      statusTitle: summary.status_title ?? (isAnimalVoice ? "Out of scope: animal audio" : "Upload not analyzed"),
       severityLevel: summary.severity_level ?? "unavailable",
       processingStatus: "invalid_input",
       durationSec: typeof durationSec === "number" ? durationSec : undefined,
@@ -296,10 +312,21 @@ export function mapPhase9Response(
   const label = voice.origin_label ?? "inconclusive"
   const sslDetected = voice.ssl_origin_detected === true
   const strongForensic = summary.strong_forensic_detected === true
-  const isDeepfake = mapOriginToDeepfake(label, strongForensic, sslDetected)
-  const confidence = axisConfidencePct(data)
 
   const report = data.phase9c_report
+
+  // Origin ≥ 65% but not a confirmed AI label → genuinely inconclusive in history.
+  // Origin 50–65% → "moderate elevated" — keep as bonafide in history (not alarming).
+  const elevatedButInconclusive =
+    !sslDetected &&
+    !strongForensic &&
+    label !== "likely_ai_generated" &&
+    label !== "likely_ai_generated_with_processing" &&
+    (report?.origin_evidence?.probability ?? 0) >= 0.65
+  const isDeepfake = elevatedButInconclusive
+    ? false // keep false so no false alarm, but attackType/badge will be set to "inconclusive"
+    : mapOriginToDeepfake(label, strongForensic, sslDetected)
+  const confidence = axisConfidencePct(data)
   const originProb = report?.origin_evidence?.probability ?? 0
   const replayProb = report?.replay_evidence?.probability ?? 0
   const mixerProb = report?.mixer_channel_evidence?.probability ?? 0
@@ -346,7 +373,8 @@ export function mapPhase9Response(
       recommendation: summary.recommendation_text ?? data.recommendation ?? "",
       recommendationLevel: summary.recommendation_level ?? data.recommendation_level ?? "none",
       highlightedSegmentText: summary.highlighted_segment_text,
-      confidenceText: summary.confidence_text ?? voice.confidence_text,
+      // Override backend confidenceText so it always matches the actual origin probability band.
+      confidenceText: `Evidence strength: ${evidenceStrengthLabel(originProb)}`,
       plainLanguageExplanation: summary.plain_language_explanation ?? voice.explanation,
       evidenceAxisCards: cards,
       manualReviewRequired: data.manual_review_required !== false,
@@ -369,26 +397,41 @@ export function mapPhase9Response(
     },
     originProb,
   )
-  const phase9: Phase9ResultView = applyLikelyHumanWithChannelArtifactsCopy(
+  const phase9AfterChannel = applyLikelyHumanWithChannelArtifactsCopy(
     basePhase9,
     originProb,
     replayProb,
     mixerProb,
   )
+  const phase9: Phase9ResultView = applyClearHumanProfileCopy(
+    phase9AfterChannel,
+    originProb,
+    replayProb,
+    mixerProb,
+    partialProb,
+    cards,
+    { sslDetected, strongForensic },
+  )
 
   const resolvedLabel = phase9.voiceOriginLabel
+  const displayCards = phase9.evidenceAxisCards ?? cards
 
   const envReasons: string[] = []
   const specReasons: string[] = []
-  for (const card of cards) {
-    const line = `${card.axis_name}: ${card.status} — ${card.user_text}`
+  for (const card of displayCards) {
+    const line = `${card.axis_name}: ${card.status}. ${card.user_text}`
     if (card.score_text) specReasons.push(`${line} (${card.score_text})`)
     else specReasons.push(line)
   }
   if (data.evidence_summary) envReasons.push(data.evidence_summary)
 
   let attackType = "bonafide"
-  if (isDeepfake) {
+  if (phase9.voiceOriginLabel === "likely_human" || phase9.voiceOriginLabel === "likely_human_with_channel_artifacts" || phase9.voiceOriginLabel === "likely_human_moderate_origin") {
+    attackType = "bonafide"
+  } else if (elevatedButInconclusive) {
+    // Elevated origin but below detection threshold — show as inconclusive in history
+    attackType = "inconclusive"
+  } else if (isDeepfake) {
     const detected = cards.find((c) => c.status === "Detected")
     if (detected?.axis_name.toLowerCase().includes("replay")) attackType = "replay"
     else if (detected?.axis_name.toLowerCase().includes("partial")) attackType = "conversion"

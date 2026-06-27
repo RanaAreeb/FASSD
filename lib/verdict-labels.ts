@@ -40,9 +40,9 @@ export const FILE_VERDICT_LABELS: Record<FileVerdictTag, { title: string; short:
 export function formatClassHint(raw: string): string {
   const key = raw.toLowerCase()
   if (key === "bonafide") return "Human (bonafide)"
-  if (key === "synthesis") return "AI — synthesis"
-  if (key === "conversion") return "AI — voice conversion"
-  if (key === "replay") return "AI — replay"
+  if (key === "synthesis") return "AI synthesis"
+  if (key === "conversion") return "AI voice conversion"
+  if (key === "replay") return "AI replay"
   return raw.charAt(0).toUpperCase() + raw.slice(1)
 }
 

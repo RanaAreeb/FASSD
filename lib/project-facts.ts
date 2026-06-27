@@ -5,12 +5,12 @@ export const PROJECT = {
   logoMark: "DFD",
   namePrimary: "DeepFake",
   nameAccent: "Detection",
-  fullName: "DeepFake Detection — AI-powered synthetic speech screening",
+  fullName: "DeepFake Detection: AI-powered synthetic speech screening",
   domain: "deepfakedetection.dev",
   tagline:
-    "Multi-axis voice integrity checks — origin, replay, channel, and partial segments — with experimental evidence indicators only.",
+    "Multi-axis voice integrity checks (origin, replay, channel, and partial segments) with experimental evidence indicators only.",
   disclaimer:
-    "Outputs are experimental evidence indicators for research and demos — not legal proof of authenticity or fraud. Manual review is recommended.",
+    "Outputs are experimental evidence indicators for research and demos, not legal proof of authenticity or fraud. Manual review is recommended.",
 }
 
 /** Sidebar + marketing pipeline (matches `release/src/inference_pipeline.py`). */
@@ -49,14 +49,14 @@ export const ARCHITECTURE_AXES = [
     model: "replay_file_model",
     features: "File-level acoustic features",
     threshold: "0.65",
-    note: "Rerecording — not AI-generated",
+    note: "Rerecording, not AI-generated",
   },
   {
     label: "Mixer / channel",
     model: "mixer_file_model",
     features: "File-level acoustic features",
     threshold: "0.75",
-    note: "Processing effects — not AI-generated",
+    note: "Processing effects, not AI-generated",
   },
   {
     label: "Partial segments",
@@ -116,7 +116,7 @@ export const PIPELINE_STEPS = [
     step: "04",
     title: "Run four models",
     description:
-      "Origin (SSL), replay (acoustic), mixer/channel (acoustic), and partial segment (combined) — each axis stays separate.",
+      "Origin (SSL), replay (acoustic), mixer/channel (acoustic), and partial segment (combined). Each axis stays separate.",
   },
   {
     step: "05",
@@ -130,7 +130,7 @@ export const CAPABILITIES = [
   {
     title: "Four independent checks",
     description:
-      "Voice source, replay signs, channel/mix effects, and edited segments are scored separately — not collapsed into one fake score.",
+      "Voice source, replay signs, channel/mix effects, and edited segments are scored separately, not collapsed into one fake score.",
     tag: "Phase 9",
   },
   {
@@ -178,7 +178,7 @@ export const USE_CASES = [
   },
   {
     title: "Call-center triage",
-    description: "Flag suspicious recordings for human review — not automated blocking or legal verdicts.",
+    description: "Flag suspicious recordings for human review, not automated blocking or legal verdicts.",
     icon: "calls" as const,
   },
 ] as const

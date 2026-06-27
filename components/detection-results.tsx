@@ -88,7 +88,7 @@ function Phase9DetectionResults({
 
   const handleDownload = async (kind: "pdf" | "json") => {
     if (!caseId) {
-      setReportError("Report is not ready yet — case ID missing.")
+      setReportError("Report is not ready yet. Case ID missing.")
       return
     }
     setReportError(null)

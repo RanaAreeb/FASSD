@@ -19,7 +19,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-sm">
-              AI-powered synthetic speech screening with four separate integrity checks — Phase 9 release backend and
+              AI-powered synthetic speech screening with four separate integrity checks. Phase 9 release backend and
               a Next.js + FastAPI demo stack.
             </p>
           </div>
@@ -79,7 +79,7 @@ export function Footer() {
             © {new Date().getFullYear()} {PROJECT.name} · {PROJECT.fullName}
           </p>
           <p className="text-xs text-center sm:text-right max-w-md">
-            Model outputs are screening estimates — not legal or forensic certification.
+            Model outputs are screening estimates, not legal or forensic certification.
           </p>
         </div>
       </div>

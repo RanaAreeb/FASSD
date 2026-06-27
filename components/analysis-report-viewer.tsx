@@ -73,7 +73,7 @@ export function AnalysisReportViewer({
 
   const handleDownload = async (kind: "pdf" | "json") => {
     if (!caseId) {
-      setDownloadError("Case ID missing — cannot download file.")
+      setDownloadError("Case ID missing. Cannot download file.")
       return
     }
     setDownloadError(null)
@@ -93,7 +93,7 @@ export function AnalysisReportViewer({
         <DialogHeader className="p-6 pb-4 border-b border-border/50 sticky top-0 bg-background/95 backdrop-blur z-10">
           <DialogTitle className="text-xl font-orbitron">Technical report & export</DialogTitle>
           <DialogDescription className="text-left">
-            {viewModel?.filename ?? filename ?? "Same analysis as the summary — with technical metrics and raw JSON"}
+            {viewModel?.filename ?? filename ?? "Same analysis as the summary, with technical metrics and raw JSON"}
           </DialogDescription>
         </DialogHeader>
 

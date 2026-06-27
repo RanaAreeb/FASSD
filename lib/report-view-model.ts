@@ -1,7 +1,12 @@
 import type { DetectionResult, EvidenceAxisCard, Phase9ResultView } from "@/lib/detection-types"
 import type { AudioAnalysis } from "@/lib/firestore"
 import { formatScreeningScore, formatScreeningScoreFromPercent } from "@/lib/copy-safety"
-import { strengthLabelFromCard } from "@/lib/forensic-consistency"
+import {
+  strengthLabelFromCard,
+  evidenceStrengthFromProbability,
+  isClearHumanAxisProfile,
+  normalizeCardsForClearHuman,
+} from "@/lib/forensic-consistency"
 
 export interface ReportAxisMetric {
   label: string
@@ -49,11 +54,17 @@ function fmtProb(value: unknown): string {
 function fmtStrength(evidence: Record<string, unknown> | null, cards: EvidenceAxisCard[], needle: string): string {
   const fromCard = strengthLabelFromCard(cards, needle)
   if (fromCard !== "—") return fromCard
+  const prob = evidence?.probability
+  if (typeof prob === "number") return evidenceStrengthFromProbability(prob)
   if (!evidence) return "—"
-  const band = evidence.evidence_strength_band
-  if (typeof band === "string") return band
-  const strength = evidence.evidence_strength ?? evidence.label
-  return typeof strength === "string" ? strength : "—"
+  const raw = evidence.evidence_strength_band ?? evidence.evidence_strength ?? evidence.label
+  if (typeof raw !== "string") return "—"
+  const lower = raw.toLowerCase()
+  if (lower.includes("high")) return "High evidence"
+  if (lower.includes("moderate") || lower.includes("medium")) return "Moderate evidence"
+  if (lower.includes("low")) return "Low evidence"
+  if (lower.includes("borderline")) return "Borderline"
+  return raw
 }
 
 export function buildReportViewModelFromPayload(
@@ -67,9 +78,11 @@ export function buildReportViewModelFromPayload(
   const report = asRecord(payload.phase9c_report) ?? {}
   const safety = asRecord(payload.safety) ?? {}
 
-  const cards = (Array.isArray(payload.evidence_axis_cards)
-    ? payload.evidence_axis_cards
-    : p9?.evidenceAxisCards ?? []) as EvidenceAxisCard[]
+  const cards = (p9?.evidenceAxisCards?.length
+    ? p9.evidenceAxisCards
+    : Array.isArray(payload.evidence_axis_cards)
+      ? payload.evidence_axis_cards
+      : []) as EvidenceAxisCard[]
 
   const topSegments = Array.isArray(pf.top_segments) ? pf.top_segments : []
   const segmentRows: ReportSegmentRow[] =
@@ -109,50 +122,89 @@ export function buildReportViewModelFromPayload(
     ? payload.limitations.map(String)
     : []
 
+  const originProb = typeof origin?.probability === "number" ? origin.probability : null
+  const replayProb = typeof replay?.probability === "number" ? replay.probability : null
+  const mixerProb = typeof mixer?.probability === "number" ? mixer.probability : null
+  const partialProb =
+    typeof partial?.max_segment_probability === "number"
+      ? partial.max_segment_probability
+      : typeof partial?.probability === "number"
+        ? partial.probability
+        : null
+
+  const clearHuman =
+    originProb != null &&
+    replayProb != null &&
+    mixerProb != null &&
+    partialProb != null &&
+    isClearHumanAxisProfile(originProb, replayProb, mixerProb, partialProb, cards)
+
+  const voiceOriginText = clearHuman
+    ? "Voice origin: Likely human"
+    : String(p9?.voiceOriginText ?? summary.voice_origin_text ?? voice.display_text ?? "—")
+
+  const forensicIndicatorSummary = clearHuman
+    ? "No strong manipulation indicators detected"
+    : String(p9?.forensicIndicatorSummary ?? summary.forensic_indicator_summary ?? payload.forensic_indicator_summary ?? "")
+
+  const recommendation = clearHuman
+    ? "No urgent review suggested from screening scores."
+    : String(p9?.recommendation ?? summary.recommendation_text ?? payload.recommendation ?? "")
+
+  const confidenceText = clearHuman
+    ? "Evidence strength: Low evidence"
+    : String(p9?.confidenceText ?? summary.confidence_text ?? voice.confidence_text ?? "")
+
+  const manualReview = clearHuman ? "no" : payload.manual_review_required === false ? "no" : "yes"
+
+  const displayCards =
+    clearHuman && originProb != null ? normalizeCardsForClearHuman(cards, originProb) : cards
+
   return {
     filename: String(payload.file_name ?? fallback?.filename ?? p9?.caseId ?? "Audio file"),
     caseId: String(payload.case_id ?? p9?.caseId ?? p9?.reports?.caseId ?? "—"),
-    statusTitle: String(summary.status_title ?? p9?.statusTitle ?? "Analysis completed"),
-    voiceOriginText: String(
-      summary.voice_origin_text ?? voice.display_text ?? p9?.voiceOriginText ?? "—",
-    ),
-    forensicIndicatorSummary: String(
-      summary.forensic_indicator_summary ?? payload.forensic_indicator_summary ?? p9?.forensicIndicatorSummary ?? "",
-    ),
+    statusTitle: String(p9?.statusTitle ?? summary.status_title ?? "Analysis completed"),
+    voiceOriginText,
+    forensicIndicatorSummary,
     highlightedSegmentText: String(
-      summary.highlighted_segment_text ?? p9?.highlightedSegmentText ?? "",
+      p9?.highlightedSegmentText !== undefined
+        ? (p9.highlightedSegmentText ?? "")
+        : clearHuman
+          ? ""
+          : summary.highlighted_segment_text ?? ""
     ),
-    recommendation: String(
-      summary.recommendation_text ?? payload.recommendation ?? p9?.recommendation ?? "",
-    ),
-    confidenceText: String(
-      summary.confidence_text ?? voice.confidence_text ?? p9?.confidenceText ?? "",
-    ),
+    recommendation,
+    confidenceText,
     duration: typeof durationSec === "number" ? `${durationSec.toFixed(1)} s` : fallback?.result?.duration ?? "—",
-    processingStatus: String(payload.processing_status ?? p9?.processingStatus ?? "ok"),
-    manualReview: payload.manual_review_required === false ? "no" : "yes",
-    evidenceCards: cards,
+    processingStatus: String(p9?.processingStatus ?? payload.processing_status ?? "ok"),
+    manualReview,
+    evidenceCards: displayCards,
     segmentRows,
     axisMetrics: [
       {
         label: "AI-origin evidence",
         probability: fmtProb(origin?.probability),
-        strength: fmtStrength(origin, cards, "AI-origin"),
+        strength: fmtStrength(origin, displayCards, "AI-origin"),
       },
       {
         label: "Replay evidence",
         probability: fmtProb(replay?.probability),
-        strength: fmtStrength(replay, cards, "Replay"),
+        strength: fmtStrength(replay, displayCards, "Replay"),
       },
       {
         label: "Channel/mixer evidence",
         probability: fmtProb(mixer?.probability),
-        strength: fmtStrength(mixer, cards, "Channel"),
+        strength: fmtStrength(mixer, displayCards, "Channel"),
       },
       {
         label: "Partial segment evidence",
+        // When the detection gate did not fire, show the max segment probability only as context,
+        // not as a confirmed evidence score. The gate outcome drives the strength label.
         probability: fmtProb(partial?.max_segment_probability ?? partial?.probability),
-        strength: fmtStrength(partial, cards, "Partial"),
+        strength:
+          partial?.evidence_detected === false
+            ? "Low evidence (gate: Not detected)"
+            : fmtStrength(partial, displayCards, "Partial"),
       },
     ],
     limitations,

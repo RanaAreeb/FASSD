@@ -46,7 +46,7 @@ export const REAL_WORLD_CASE_STUDIES: CaseStudyRecord[] = [
     id: "biden-nh-robocall",
     slug: "biden-nh-robocall",
     title: "Biden New Hampshire Robocall",
-    subtitle: "January 2024 political robocall — phone-channel AI voice clone",
+    subtitle: "January 2024 political robocall, phone-channel AI voice clone",
     youtubeUrl: "https://www.youtube.com/watch?v=FCs_zFbkf0M",
     overview:
       "In January 2024, a robocall imitating President Joe Biden was sent to voters in New Hampshire before the state primary. The call used a cloned voice message and encouraged voters not to participate in the primary. The case became one of the most public examples of AI-generated political audio misuse because it combined voice cloning, robocall distribution, and election-related misinformation. The public YouTube copy used here is useful for FASSD because it represents a phone-channel deepfake that passed through a news-media recording chain rather than a clean studio file.",
@@ -65,14 +65,14 @@ export const REAL_WORLD_CASE_STUDIES: CaseStudyRecord[] = [
       band: "Borderline (raw origin indicator ~88.7%)",
       screeningScore: "~88.7%",
       interpretation:
-        "The SSL origin model produced a borderline AI-origin indicator (~88.7%), but FASSD downgraded the user-facing origin label because elevated replay and mixer/channel evidence dominated the recording chain. This is consistent with a robocall or news-media copy where channel processing can mask origin cues. This is experimental evidence only — not a conclusive authenticity decision.",
+        "The SSL origin model produced a borderline AI-origin indicator (~88.7%), but FASSD downgraded the user-facing origin label because elevated replay and mixer/channel evidence dominated the recording chain. This is consistent with a robocall or news-media copy where channel processing can mask origin cues. This is experimental evidence only, not a conclusive authenticity decision.",
     },
     replay: {
       result: "Elevated replay/rerecording indicator",
       band: "High",
       screeningScore: "~96.0%",
       interpretation:
-        "Strong replay/rerecording indicators were observed across the file. This does not mean the voice is human — it reflects that the public copy likely passed through phone, broadcast, or re-recording chains. Review together with mixer/channel evidence.",
+        "Strong replay/rerecording indicators were observed across the file. This does not mean the voice is human. It reflects that the public copy likely passed through phone, broadcast, or re-recording chains. Review together with mixer/channel evidence.",
     },
     mixer: {
       result: "Elevated mixer/channel indicator",
@@ -98,10 +98,10 @@ export const REAL_WORLD_CASE_STUDIES: CaseStudyRecord[] = [
     id: "pikesville-principal",
     slug: "pikesville-principal",
     title: "Baltimore/Pikesville Principal Audio",
-    subtitle: "2024 school principal deepfake — multi-axis manipulation case",
+    subtitle: "2024 school principal deepfake, multi-axis manipulation case",
     youtubeUrl: "https://www.youtube.com/watch?v=WT-2p832IMk",
     overview:
-      "In 2024, an audio recording circulated online that appeared to show a Baltimore County school principal making offensive comments. The recording caused serious public harm before later reporting and investigation described it as fake or AI-generated. This case is important because it affected a local individual rather than only a public political figure. Public forensic discussion also mentioned editing, splicing, unnatural pauses, and possible speaker-to-device recording — making it a stronger test for FASSD's multi-axis design.",
+      "In 2024, an audio recording circulated online that appeared to show a Baltimore County school principal making offensive comments. The recording caused serious public harm before later reporting and investigation described it as fake or AI-generated. This case is important because it affected a local individual rather than only a public political figure. Public forensic discussion also mentioned editing, splicing, unnatural pauses, and possible speaker-to-device recording, making it a stronger test for FASSD's multi-axis design.",
     externalFinding:
       "External experts reported strong signs that the audio was AI-generated or manipulated. Public reporting described findings from deepfake detection methods, audio editing indicators, and possible rerecording through a speaker or another device. Some expert commentary also remained cautious, noting that detector output alone should not be treated as absolute proof.",
     audioFilename: "pikesville_principal.wav",
@@ -117,14 +117,14 @@ export const REAL_WORLD_CASE_STUDIES: CaseStudyRecord[] = [
       band: "Moderate–high (elevated AI-origin indicator)",
       screeningScore: "~96.0%",
       interpretation:
-        "The active SSL origin model shows elevated AI-origin indicators on this public copy. This is experimental evidence only — not a conclusive authenticity decision. Manual review is still recommended.",
+        "The active SSL origin model shows elevated AI-origin indicators on this public copy. This is experimental evidence only, not a conclusive authenticity decision. Manual review is still recommended.",
     },
     replay: {
       result: "Low replay/rerecording indicator",
       band: "Low",
       screeningScore: "~0.0%",
       interpretation:
-        "No strong replay/rerecording indicators were highlighted on this axis for the YouTube copy tested. This does not prove the recording chain was pristine — only that replay cues were not dominant in this file.",
+        "No strong replay/rerecording indicators were highlighted on this axis for the YouTube copy tested. This does not prove the recording chain was pristine. Replay cues were not dominant in this file.",
     },
     mixer: {
       result: "Low mixer/channel indicator",

@@ -105,13 +105,13 @@ export function AiLabPanel({ onFileReady, disabled }: AiLabPanelProps) {
       setAiDuration(duration)
 
       if (duration == null) {
-        setStatus(`Generated AI audio (${(file.size / 1024).toFixed(0)} KB). Duration could not be measured — try analyzing or add more text.`)
+        setStatus(`Generated AI audio (${(file.size / 1024).toFixed(0)} KB). Duration could not be measured. Try analyzing or add more text.`)
         return
       }
 
       if (duration < AI_LAB_MIN_DURATION_SECONDS) {
         setError(
-          `Generated audio is only ${formatDuration(duration)}. Add more text — aim for at least ${AI_LAB_MIN_DURATION_SECONDS} seconds (~150+ words) of speech.`,
+          `Generated audio is only ${formatDuration(duration)}. Add more text. Aim for at least ${AI_LAB_MIN_DURATION_SECONDS} seconds (~150+ words) of speech.`,
         )
         return
       }
@@ -173,7 +173,7 @@ export function AiLabPanel({ onFileReady, disabled }: AiLabPanelProps) {
     <div className="space-y-5 text-left">
       <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-xs text-muted-foreground leading-relaxed">
         Generate synthetic speech with Deepgram for lab testing only. Use a full paragraph (about one minute when read
-        aloud). Results are screening estimates — not legal proof.
+        aloud). Results are screening estimates, not legal proof.
       </div>
 
       <div className="space-y-2">
@@ -226,7 +226,7 @@ export function AiLabPanel({ onFileReady, disabled }: AiLabPanelProps) {
       )}
 
       <div className="border-t border-border/40 pt-4 space-y-3">
-        <p className="text-sm font-medium">Mixer — human + fabricated segment</p>
+        <p className="text-sm font-medium">Mixer: human + fabricated segment</p>
         <p className="text-xs text-muted-foreground">
           Insert the generated AI segment into a human recording to simulate partial fabrication. Human clip should also
           be at least {AI_LAB_MIN_DURATION_SECONDS} seconds.

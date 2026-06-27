@@ -147,8 +147,8 @@ function DashboardContent() {
             Understand your audio in seconds
           </h1>
           <p className="mt-3 text-muted-foreground max-w-2xl text-sm sm:text-base leading-relaxed">
-            Upload a recording and we run four focused checks — voice source, replay signs, channel effects, and
-            edited segments — then show you a clear waveform with anything worth replaying marked on the timeline.
+            Upload a recording and we run four focused checks: voice source, replay signs, channel effects, and
+            edited segments. Then we show you a clear waveform with anything worth replaying marked on the timeline.
           </p>
         </header>
 

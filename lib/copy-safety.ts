@@ -49,7 +49,7 @@ export function softenForensicCopy(text: string | undefined | null): string {
 }
 
 export const FORENSIC_DISCLAIMER =
-  "Screening estimate only — not legal proof. Evidence can be inconclusive; manual review is recommended."
+  "Screening estimate only. Not legal proof. Evidence can be inconclusive; manual review is recommended."
 
 export const RESULTS_VS_REPORT_NOTE =
   "This page is the plain-language summary. Full report adds technical axis metrics, segment timestamps, export files, and raw JSON from the same analysis."

@@ -25,6 +25,9 @@ firebase-adminsdk*.json
 # --- Vercel ---
 .vercel
 
+# --- Local run notes ---
+run.md
+
 # --- TypeScript ---
 *.tsbuildinfo
 next-env.d.ts

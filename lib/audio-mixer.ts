@@ -40,30 +40,52 @@ function audioBufferToWav(buffer: AudioBuffer): Blob {
   return new Blob([arrayBuffer], { type: "audio/wav" })
 }
 
-/** Convert browser MediaRecorder output (webm/ogg) to WAV for backend upload without ffmpeg. */
+// Models (AASIST, HybridResNet) were trained on 16 kHz mono WAV.
+// Browser MediaRecorder captures at the device native rate (44.1 or 48 kHz).
+// Sending native-rate audio causes spectral mismatches that inflate the AI-origin score
+// for genuine human recordings. Always resample to 16 kHz before upload.
+const MODEL_SAMPLE_RATE = 16000
+
+/** Convert browser MediaRecorder output (webm/ogg) to 16 kHz mono WAV for backend upload. */
 export async function blobToWavFile(blob: Blob, filename: string): Promise<File> {
   const arrayBuffer = await blob.arrayBuffer()
-  const ctx = new AudioContext()
+  // Decode at native rate first, then resample to MODEL_SAMPLE_RATE via OfflineAudioContext.
+  const probeCtx = new AudioContext()
+  let nativeBuffer: AudioBuffer
   try {
-    const buffer = await ctx.decodeAudioData(arrayBuffer.slice(0))
-    const mono =
-      buffer.numberOfChannels === 1
-        ? buffer
-        : (() => {
-            const out = ctx.createBuffer(1, buffer.length, buffer.sampleRate)
-            const mix = out.getChannelData(0)
-            for (let ch = 0; ch < buffer.numberOfChannels; ch++) {
-              const data = buffer.getChannelData(ch)
-              for (let i = 0; i < data.length; i++) mix[i] += data[i] / buffer.numberOfChannels
-            }
-            return out
-          })()
-    const wav = audioBufferToWav(mono)
-    const name = filename.toLowerCase().endsWith(".wav") ? filename : filename.replace(/\.[^.]+$/, "") + ".wav"
-    return new File([wav], name, { type: "audio/wav" })
+    nativeBuffer = await probeCtx.decodeAudioData(arrayBuffer.slice(0))
   } finally {
-    await ctx.close()
+    await probeCtx.close()
   }
+
+  const nativeSamples = nativeBuffer.length
+  const nativeRate = nativeBuffer.sampleRate
+  const targetLength = Math.ceil((nativeSamples / nativeRate) * MODEL_SAMPLE_RATE)
+
+  // OfflineAudioContext resamples during render.
+  const offline = new OfflineAudioContext(1, targetLength, MODEL_SAMPLE_RATE)
+  const src = offline.createBufferSource()
+
+  // Mix to mono if stereo before resampling.
+  if (nativeBuffer.numberOfChannels === 1) {
+    src.buffer = nativeBuffer
+  } else {
+    const monoNative = new AudioContext().createBuffer(1, nativeSamples, nativeRate)
+    const mix = monoNative.getChannelData(0)
+    for (let ch = 0; ch < nativeBuffer.numberOfChannels; ch++) {
+      const chData = nativeBuffer.getChannelData(ch)
+      for (let i = 0; i < nativeSamples; i++) mix[i] += chData[i] / nativeBuffer.numberOfChannels
+    }
+    src.buffer = monoNative
+  }
+
+  src.connect(offline.destination)
+  src.start(0)
+  const resampled = await offline.startRendering()
+
+  const wav = audioBufferToWav(resampled)
+  const name = filename.toLowerCase().endsWith(".wav") ? filename : filename.replace(/\.[^.]+$/, "") + ".wav"
+  return new File([wav], name, { type: "audio/wav" })
 }
 
 /** Insert an AI/synthetic segment into a human recording at a chosen second. */

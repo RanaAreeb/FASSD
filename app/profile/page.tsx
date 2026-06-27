@@ -203,13 +203,19 @@ function ProfileContent() {
                         <span>{new Date(analysis.createdAt).toLocaleDateString()}</span>
                       </div>
                       <div className="flex items-center gap-2 mt-2">
-                        <Badge
-                          variant={analysis.isDeepfake ? "destructive" : "secondary"}
-                          className={!analysis.isDeepfake ? "bg-green-500/20 text-green-600" : ""}
-                        >
-                          {analysis.isDeepfake ? "Indicators present" : "No strong indicators"}
-                        </Badge>
-                        {analysis.attackType && (
+                        {analysis.attackType === "inconclusive" ? (
+                          <Badge variant="secondary" className="bg-amber-500/20 text-amber-500">
+                            Inconclusive
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant={analysis.isDeepfake ? "destructive" : "secondary"}
+                            className={!analysis.isDeepfake ? "bg-green-500/20 text-green-600" : ""}
+                          >
+                            {analysis.isDeepfake ? "Indicators present" : "No strong indicators"}
+                          </Badge>
+                        )}
+                        {analysis.attackType && analysis.attackType !== "bonafide" && analysis.attackType !== "inconclusive" && (
                           <Badge variant="outline">{analysis.attackType}</Badge>
                         )}
                         {analysis.caseId && (

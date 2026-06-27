@@ -60,7 +60,7 @@ export function getMicDiagnostics(): MicDiagnostics | null {
   let likelyPopupBlockedReason: string | null = null
   if (!window.isSecureContext && isLanIp) {
     likelyPopupBlockedReason =
-      `You opened ${href} — LAN IP addresses are not secure. Use http://localhost:3000 instead.`
+      `You opened ${href}. LAN IP addresses are not secure. Use http://localhost:3000 instead.`
   } else if (!window.isSecureContext) {
     likelyPopupBlockedReason = "This page is not secure. Use http://localhost:3000 or HTTPS."
   } else if (!isMicrophoneApiSupported()) {
@@ -102,7 +102,7 @@ export function platformMicHelp(platform: MicPlatform): string[] {
         "Click the lock or site-info icon in the address bar → Site permissions → Microphone → Allow.",
         "Windows Settings → Privacy & security → Microphone → turn on microphone access for desktop apps and your browser.",
         "Close other apps using the mic (Zoom, Teams, Discord), then reload this page.",
-        "Use Chrome, Edge, or Firefox (latest version) — not an embedded IDE preview.",
+        "Use Chrome, Edge, or Firefox (latest version), not an embedded IDE preview.",
       ]
     case "mac":
       return [
@@ -141,7 +141,7 @@ export function platformMicHelp(platform: MicPlatform): string[] {
 export function permissionResetSteps(platform: MicPlatform): string[] {
   const common = [
     "The permission popup only appears the first time. If you clicked Block, the browser will not ask again until you reset site permissions.",
-    "Open this site in Chrome, Edge, Firefox, or Safari — embedded IDE previews often block microphone access.",
+    "Open this site in Chrome, Edge, Firefox, or Safari. Embedded IDE previews often block microphone access.",
     "Use http://localhost:3000 or https://your-domain.com (not a plain http:// LAN IP).",
   ]
   switch (platform) {
@@ -252,7 +252,7 @@ export async function requestMicrophoneStream(): Promise<MediaStream> {
     const hint = diag?.isLanIp
       ? "Open http://localhost:3000 instead of the Network IP URL."
       : "Use localhost or HTTPS."
-    throw new DOMException(`Insecure context — ${hint}`, "SecurityError")
+    throw new DOMException(`Insecure context: ${hint}`, "SecurityError")
   }
 
   try {
@@ -279,7 +279,7 @@ export function requestMicrophoneStreamSync(): Promise<MediaStream> {
     const hint = diag?.isLanIp
       ? "Open http://localhost:3000 instead of the Network IP URL."
       : "Use localhost or HTTPS."
-    return Promise.reject(new DOMException(`Insecure context — ${hint}`, "SecurityError"))
+    return Promise.reject(new DOMException(`Insecure context: ${hint}`, "SecurityError"))
   }
   return navigator.mediaDevices.getUserMedia({ audio: true, video: false })
 }

@@ -19,7 +19,7 @@ const orbitron = Orbitron({
 export const metadata: Metadata = {
   title: PROJECT.fullName,
   description:
-    "Upload audio for multi-axis deepfake screening — origin, replay, channel, and partial-segment evidence with experimental indicators only.",
+    "Upload audio for multi-axis deepfake screening: origin, replay, channel, and partial-segment evidence with experimental indicators only.",
   generator: "v0.app",
 }
 

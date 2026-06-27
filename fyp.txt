@@ -1,0 +1,1107 @@
+# FASSD Final FYP Presentation Content
+
+## Slide 1 — Title Slide
+
+### FASSD
+
+## Forensic Audio Source and Spoofing Detector
+
+**Final Year Project Presentation**
+
+**Team Members:**
+Rana M. Areeb
+M. Hasnain Siddique
+
+**Supervisor:**
+Sir Faran Mehmood
+
+**Live Website:**
+https://www.deepfakedetection.dev/
+
+**Repositories:**
+https://github.com/RanaAreeb/FASSD
+https://github.com/MHS-4ever/FYP_FASSD
+
+**Speaker notes:**
+Good morning respected panel. Our project is FASSD, which stands for Forensic Audio Source and Spoofing Detector. It is an experimental forensic audio decision-support system. Instead of only saying fake or real, it analyzes audio through different forensic evidence axes and provides a structured report for manual review.
+
+---
+
+## Slide 2 — Opening Story
+
+### Why We Started This Project
+
+At the start, our project goal was simple:
+
+## Detect AI-generated speech using machine learning.
+
+But during development, we found that real-world audio is not simple.
+
+Real-world audio may be:
+
+* AI-generated
+* Human but replayed
+* Compressed through phone or WhatsApp
+* Mixed through another channel
+* Partially edited
+* Uploaded through social media or YouTube
+
+### Main Realization
+
+## A single fake/real detector is not enough for forensic audio review.
+
+**Speaker notes:**
+Our project started as a normal deepfake audio detection system. But while testing, we saw that real-world audio behaves differently from clean benchmark audio. A fake or real label alone was not enough. This changed the direction of the project toward forensic evidence analysis.
+
+---
+
+## Slide 3 — Problem Statement
+
+### Problem
+
+Modern AI voice cloning can create realistic speech, but detecting it is difficult because real audio is affected by:
+
+* Noise
+* Compression
+* Replay
+* Broadcast chains
+* Speaker-to-device recording
+* Partial editing
+
+Most deepfake detectors give one score, but forensic review needs explanation.
+
+### Final Problem Statement
+
+## How can we detect and explain suspicious forensic evidence in audio instead of only giving a binary fake/real label?
+
+**Speaker notes:**
+The main problem is not only whether the audio is fake or real. The real problem is understanding what type of evidence exists inside the recording. For example, replay evidence does not always mean AI-generated speech. A human recording can also be replayed. That is why FASSD separates evidence into multiple axes.
+
+---
+
+## Slide 4 — Project Aim
+
+### Aim of FASSD
+
+To design, evaluate, and deploy an experimental forensic audio system that analyzes uploaded speech recordings and reports evidence indicators for:
+
+1. AI-origin evidence
+2. Replay or rerecording evidence
+3. Mixer/channel processing evidence
+4. Partial fabrication or edited segment evidence
+
+### Key Shift
+
+## From: “Is this fake or real?”
+
+## To: “What evidence exists in this audio?”
+
+**Speaker notes:**
+The aim of FASSD is not to replace forensic experts. It is a decision-support tool. It helps users and reviewers identify suspicious evidence and decide which parts of the audio need closer manual inspection.
+
+---
+
+## Slide 5 — Official and Extended Objectives
+
+### Official Approved Objectives
+
+* Build a deepfake audio detection system
+* Train machine learning models
+* Use audio features such as LFCC and log-mel
+* Evaluate using EER, accuracy, AUC, and confusion matrix
+* Deliver a working software tool
+
+### Extended Objectives
+
+* Move from single detector to multi-axis forensic evidence
+* Add partial fabrication analysis
+* Generate readable evidence reports
+* Deploy a public web application
+* Test real-world public case studies
+
+**Speaker notes:**
+We completed the official scope first using baseline models and standard evaluation. After failure analysis, we extended the project into a multi-axis forensic system. This extension was necessary because our testing showed that a single model was not safe enough for real-world use.
+
+---
+
+## Slide 6 — Development Methodology
+
+### Iterative and Incremental Development
+
+FASSD followed an iterative and incremental model.
+
+We repeated this cycle:
+
+Build
+↓
+Evaluate
+↓
+Find failure
+↓
+Improve method
+↓
+Test again
+↓
+Freeze release
+
+### Why This Method?
+
+* Requirements changed after testing
+* Some models performed well on paper but failed in real-world cases
+* Each phase produced a working output
+* Final design was based on evidence from experiments
+
+**Speaker notes:**
+We did not follow pure waterfall because the method changed after testing. We also did not follow formal agile because we did not use scrum roles or fixed sprints. The best description is iterative and incremental development.
+
+---
+
+## Slide 7 — Full Project Journey
+
+### How the System Evolved
+
+1. Baseline CNN/LCNN model
+2. ResNet model
+3. Environmental feature classifier
+4. HybridResNetEnvironmental model
+5. AASIST experiment
+6. Controlled forensic testing
+7. Multi-axis evidence architecture
+8. Phase 9 FastAPI backend
+9. Public web deployment
+10. Real-world case studies
+
+### Main Story
+
+## Every major design change was made because testing exposed a limitation.
+
+**Speaker notes:**
+This slide shows the complete journey. We did not randomly change models. Each change was based on experimental evidence. For example, ResNet had excellent EER but failed on broadcast-style audio. AASIST was strong in literature but gave too many false alarms in our controlled testing.
+
+---
+
+## Slide 8 — Dataset Overview
+
+### Dataset Sources
+
+FASSD used multiple sources:
+
+* ASVspoof Logical Access
+* ASVspoof Deepfake
+* ASVspoof Physical Access
+* Real-world collected audio
+* Controlled forensic audio
+* Augmented audio with noise, reverb, codec, gain, and channel effects
+
+### Unified Dataset Size
+
+## 1,893,919 audio samples
+
+### Dataset Distribution
+
+* Spoof samples: 1,573,308
+* Bona fide samples: 320,611
+* Replay samples: 816,480
+* Conversion samples: 589,212
+* Synthesis samples: 167,616
+
+**Speaker notes:**
+The dataset was large and covered multiple types of spoofing and manipulation. However, we still treated the results carefully because dataset size alone does not guarantee real-world forensic reliability.
+
+---
+
+## Slide 9 — Audio Processing Pipeline
+
+### End-to-End Pipeline
+
+Audio upload
+↓
+Audio loading
+↓
+Resampling
+↓
+Normalization
+↓
+Segmentation
+↓
+Feature extraction
+↓
+Evidence models
+↓
+Fusion logic
+↓
+Report output
+↓
+Web interface
+
+### Production Processing
+
+* Audio is standardized before analysis
+* Backend uses consistent processing
+* Segment-level analysis supports partial fabrication detection
+
+**Speaker notes:**
+The audio is first converted into a consistent format. This is important because uploaded audio can come from different sources, sample rates, and platforms. After preprocessing, features are extracted and passed to the evidence models.
+
+---
+
+## Slide 10 — Feature Extraction
+
+### Features Used
+
+| Feature Type           | Purpose                       |
+| ---------------------- | ----------------------------- |
+| LFCC                   | Baseline spoofing detection   |
+| Log-Mel                | Spectral deep learning models |
+| Environmental Features | Replay and channel evidence   |
+| SSL Embeddings         | AI-origin evidence            |
+
+### Why Multiple Features?
+
+Different manipulations leave different traces.
+
+* AI speech affects voice-origin patterns
+* Replay affects recording-chain patterns
+* Mixer/channel changes affect acoustic conditions
+* Partial fabrication affects local segments
+
+**Speaker notes:**
+A key part of our method is that we did not rely on only one feature type. Each evidence axis uses the type of feature that best fits its task.
+
+---
+
+## Slide 11 — Baseline CNN/LCNN Model
+
+### First Approved-Scope Model
+
+The baseline model used LFCC features and CNN/LCNN-style classification.
+
+### Results
+
+| Test Setting       | Result |
+| ------------------ | ------ |
+| LFCC Clean EER     | 9.68%  |
+| LFCC Augmented EER | 15.71% |
+
+### Conclusion
+
+The baseline pipeline worked, but it was not enough for final forensic analysis.
+
+**Speaker notes:**
+This model fulfilled the original approved machine learning scope. It proved that the basic pipeline worked. But later testing showed that more advanced and explainable analysis was needed.
+
+---
+
+## Slide 12 — ResNet Model
+
+### Why We Tried ResNet
+
+We used ResNet because deeper convolutional models can learn stronger spectral patterns from log-mel features.
+
+### Results
+
+| Test Setting  | Result |
+| ------------- | ------ |
+| Clean EER     | 0.57%  |
+| Augmented EER | 2.61%  |
+
+### Important Finding
+
+## ResNet achieved the best benchmark EER, but it was not selected as the final product model.
+
+### Why?
+
+* It failed on broadcast-style real-world audio
+* It behaved inconsistently outside benchmark conditions
+* It produced a single fake/real style decision
+
+**Speaker notes:**
+This was one of the most important lessons of the project. ResNet gave excellent numbers, but when tested on real-world style audio, it was not reliable enough. So we decided that benchmark EER alone should not decide the final system.
+
+---
+
+## Slide 13 — Environmental Feature Classifier
+
+### Why We Added Environmental Features
+
+Real-world audio contains recording-chain evidence, such as:
+
+* Noise
+* Reverb
+* Channel distortion
+* Replay effects
+* Too-clean synthetic conditions
+
+### Results
+
+| Setup            | Result       |
+| ---------------- | ------------ |
+| Anomaly setup    | around 24.5% |
+| Supervised setup | 81.69%       |
+
+### Conclusion
+
+Environmental features were useful but not reliable as a standalone detector.
+
+**Speaker notes:**
+This phase helped us understand that forensic evidence is not only inside the voice. The recording environment and channel also matter. However, environmental features alone could not solve the complete problem.
+
+---
+
+## Slide 14 — HybridResNetEnvironmental Model
+
+### Hybrid Architecture
+
+The hybrid model combined:
+
+* Log-mel spectral branch
+* 12-dimensional environmental feature vector
+
+### Results
+
+| Metric              | Result |
+| ------------------- | ------ |
+| EER                 | 16.21% |
+| AUC                 | 0.9167 |
+| Binary Accuracy     | 89.78% |
+| Multiclass Accuracy | 64.36% |
+
+### Conclusion
+
+The hybrid model was useful for research comparison, but it was not selected as the final deployed decision logic.
+
+**Speaker notes:**
+The hybrid model combined spectral and environmental evidence. It gave useful results, but it still collapsed different evidence meanings into one output. For forensic-style use, we needed separate evidence cards instead of one combined verdict.
+
+---
+
+## Slide 15 — AASIST Experiment
+
+### Why We Tested AASIST
+
+AASIST is a strong anti-spoofing architecture in the literature.
+
+### Our Controlled Testing Result
+
+## 22 out of 23 clean human recordings were falsely flagged.
+
+### Decision
+
+## AASIST was rejected for final deployment.
+
+### Reason
+
+A strong research model is not automatically safe for a real forensic interface.
+
+**Speaker notes:**
+AASIST was tested because it is a respected architecture. But our controlled evaluation showed too many false alarms on clean human audio. In a forensic context, false accusations are dangerous, so we did not use it as the final model.
+
+---
+
+## Slide 16 — Main Research Discovery
+
+### What We Learned
+
+Different models failed in different ways:
+
+* Baseline CNN/LCNN was limited
+* ResNet had excellent benchmark EER but weak real-world generalization
+* Environmental model was useful but incomplete
+* Hybrid model still mixed evidence meanings
+* AASIST produced many false alarms
+
+### Final Decision
+
+## Build a multi-axis forensic evidence system.
+
+**Speaker notes:**
+The biggest discovery was that no single model was enough. This led to the final architecture, where every axis handles one type of evidence separately.
+
+---
+
+## Slide 17 — Final Phase 9 Architecture
+
+### Multi-Axis Evidence Architecture
+
+Audio
+↓
+Preprocessing
+↓
+Four Evidence Axes:
+
+1. Origin evidence axis
+2. Replay evidence axis
+3. Mixer/channel evidence axis
+4. Partial fabrication evidence axis
+
+↓
+Fusion layer
+↓
+Report layer
+↓
+Web interface
+
+### Final Output
+
+* Evidence indicators
+* Evidence bands
+* Segment highlights
+* Manual-review recommendation
+
+**Speaker notes:**
+The final system separates evidence types. This is safer and more explainable than one fake/real score. It also matches the forensic nature of the project.
+
+---
+
+## Slide 18 — Origin Evidence Axis
+
+### Purpose
+
+Detect whether the voice has AI-origin indicators.
+
+### Model
+
+SSL-based origin file model.
+
+### Results
+
+| Metric                  | Result |
+| ----------------------- | ------ |
+| Threshold               | 0.92   |
+| Release matrix accuracy | 83.33% |
+| Balanced accuracy       | 82.50% |
+
+### Known Failures
+
+* Some human files were falsely flagged
+* WhatsApp-compressed AI audio was missed
+
+**Speaker notes:**
+The origin axis focuses only on voice-origin evidence. It does not decide the full case alone. Compression and channel processing can reduce origin reliability.
+
+---
+
+## Slide 19 — Replay Evidence Axis
+
+### Purpose
+
+Detect replay or rerecording evidence.
+
+### Results
+
+| Metric            | Result |
+| ----------------- | ------ |
+| Threshold         | 0.65   |
+| Accuracy          | 80%    |
+| Balanced accuracy | 77.38% |
+
+### Important Rule
+
+## Replay evidence does not mean AI-generated speech.
+
+A human voice can also be replayed or rerecorded.
+
+**Speaker notes:**
+This axis is important because many public audio files pass through phones, speakers, broadcasts, or YouTube. Replay evidence describes the recording chain, not the origin of the voice.
+
+---
+
+## Slide 20 — Mixer / Channel Evidence Axis
+
+### Purpose
+
+Detect channel or mixing-related artifacts.
+
+### Results
+
+| Metric    | Result |
+| --------- | ------ |
+| Threshold | 0.75   |
+| Accuracy  | 88%    |
+| Recall    | 0%     |
+
+### Honest Limitation
+
+## This was the weakest final axis.
+
+The model did not detect positive mixer/channel cases reliably in the release matrix.
+
+**Speaker notes:**
+We are presenting this result honestly. Accuracy looked high, but recall was zero. This means the model missed the positive mixer cases. We kept the axis as experimental supporting evidence, but it needs future improvement.
+
+---
+
+## Slide 21 — Partial Fabrication Axis
+
+### Purpose
+
+Detect suspicious edited or manipulated regions.
+
+### Method
+
+* Audio is analyzed in segments
+* Suspicious candidate regions are highlighted
+* Output is shown as moments to replay
+
+### Results
+
+| Metric                  | Result                          |
+| ----------------------- | ------------------------------- |
+| Threshold               | 0.95                            |
+| Release matrix accuracy | 100%                            |
+| Status                  | Experimental manual-review only |
+
+### Important Rule
+
+Segment evidence is not proof of editing. It only highlights areas for closer review.
+
+**Speaker notes:**
+Partial fabrication cannot be solved using only file-level classification. If only one part of the audio is fake, a file-level score may miss it. That is why we use segment-level candidate analysis.
+
+---
+
+## Slide 22 — Fusion and Report Logic
+
+### Why Fusion Is Needed
+
+One model can fail, so FASSD combines multiple evidence axes.
+
+### Output Style
+
+* Low evidence
+* Medium evidence
+* High evidence
+* Manual review required
+* No conclusive authenticity decision
+
+### Safety Principle
+
+## FASSD does not issue a legal certificate.
+
+**Speaker notes:**
+The final output is intentionally cautious. It reports evidence bands, not absolute truth. This reduces the risk of overclaiming and false accusation.
+
+---
+
+## Slide 23 — Literature Comparison
+
+### What Most Literature Focuses On
+
+Many audio deepfake studies focus on:
+
+* Benchmark datasets
+* Single fake/real classification
+* EER or accuracy improvement
+* Anti-spoofing model comparison
+
+### What FASSD Adds
+
+| Literature Focus          | FASSD Extension                              |
+| ------------------------- | -------------------------------------------- |
+| Single spoof score        | Four evidence axes                           |
+| Benchmark-only testing    | Controlled and real-world case testing       |
+| Model accuracy            | Evidence explanation                         |
+| File-level classification | Segment-level partial fabrication candidates |
+| Research output           | Deployed web application                     |
+| Detector result           | Manual-review forensic report                |
+
+### Key Difference
+
+## FASSD is not only a detector; it is a forensic evidence reporting system.
+
+**Speaker notes:**
+We are not claiming that FASSD beats every literature model numerically on every benchmark. Our contribution is different. We combine detection, forensic evidence separation, report wording, and a deployed web system.
+
+---
+
+## Slide 24 — Literature and Results Positioning
+
+### Number-Based Comparison
+
+| System / Model              | Strength                                         | Limitation                                              |
+| --------------------------- | ------------------------------------------------ | ------------------------------------------------------- |
+| Traditional CNN/LCNN        | Simple baseline, official scope                  | Limited robustness                                      |
+| ResNet in FASSD             | Very strong EER: 0.57% clean, 2.61% augmented    | Failed broadcast-style testing                          |
+| AASIST-style advanced model | Strong anti-spoofing architecture in literature  | Our controlled test gave 22/23 clean-human false alarms |
+| Hybrid model                | AUC 0.9167, binary accuracy 89.78%               | Still single combined decision                          |
+| Final FASSD multi-axis      | Explains origin, replay, mixer, partial evidence | Some axes still experimental                            |
+
+### Our Better Point
+
+## FASSD is better in evidence coverage and practical reporting, not by claiming universal benchmark superiority.
+
+**Speaker notes:**
+This slide is important for defense. If the panel asks whether our model is better than all existing models, we should answer carefully. Our strongest contribution is explainability, multi-axis evidence, and deployment. We do not overclaim benchmark superiority.
+
+---
+
+## Slide 25 — Final System Result Summary
+
+### Final Multi-Axis Release Results
+
+| Axis                   | Accuracy | Balanced Accuracy |  Recall |
+| ---------------------- | -------: | ----------------: | ------: |
+| Origin evidence        |   83.33% |            82.50% |  90.00% |
+| Replay evidence        |   80.00% |            77.38% |  71.43% |
+| Mixer/channel evidence |   88.00% |            47.83% |   0.00% |
+| Partial fabrication    |  100.00% |           100.00% | 100.00% |
+
+### Interpretation
+
+* Origin and replay axes are useful but imperfect
+* Mixer/channel axis needs improvement
+* Partial fabrication result is promising but experimental
+* Manual review remains necessary
+
+**Speaker notes:**
+This table gives the final deployed system results. The important point is that results are shown separately because each axis measures a different type of evidence.
+
+---
+
+## Slide 26 — Web Deployment
+
+### Final Public System
+
+**Website:**
+https://www.deepfakedetection.dev/
+
+### Technology Stack
+
+| Component      | Technology              |
+| -------------- | ----------------------- |
+| Frontend       | Next.js on Vercel       |
+| Backend        | FastAPI on DigitalOcean |
+| HTTPS          | Caddy                   |
+| Authentication | Firebase Auth           |
+| History        | Firestore               |
+| ML Inference   | Phase 9 FastAPI backend |
+
+### User Flow
+
+Upload audio
+↓
+Analyze
+↓
+View four evidence cards
+↓
+Review timestamps
+↓
+Read safety disclaimer
+↓
+Use report for manual review
+
+**Speaker notes:**
+The final product is not only a notebook or local demo. It is deployed as a public web application. The frontend is separate from the backend, and Firebase is used for authentication and simple history.
+
+---
+
+## Slide 27 — Repository and Deployment Links
+
+### Public Links
+
+**Live Website**
+https://www.deepfakedetection.dev/
+
+**Repository 1**
+https://github.com/RanaAreeb/FASSD
+
+**Repository 2**
+https://github.com/MHS-4ever/FYP_FASSD
+
+### What These Show
+
+* Source code
+* Project implementation
+* ML/backend development
+* Website integration
+* Final deployed system direction
+
+**Speaker notes:**
+These links show the public-facing part of the project and the source repositories. The system was developed beyond a local prototype and deployed as a working web platform.
+
+---
+
+## Slide 28 — Real-World Case Studies
+
+### Why We Added Case Studies
+
+Benchmark datasets are important, but real-world audio is harder.
+
+We tested FASSD on two public deepfake audio incidents:
+
+1. Biden New Hampshire robocall
+2. Baltimore/Pikesville principal audio
+
+### Purpose
+
+To compare:
+
+* External forensic discussion
+* Public investigative findings
+* FASSD evidence-axis output
+
+### Safety Note
+
+FASSD output is experimental evidence only, not legal proof.
+
+**Speaker notes:**
+These case studies show how FASSD behaves on public real-world cases, not only controlled datasets. This makes the demo stronger and more practical.
+
+---
+
+## Slide 29 — Case Study 1: Biden New Hampshire Robocall
+
+### Case Overview
+
+In January 2024, a robocall imitating President Joe Biden was sent to voters in New Hampshire before the primary. The call used a cloned voice message and became a major public example of political AI audio misuse.
+
+### External Finding
+
+External analysis described the robocall as AI-generated voice audio. Public discussion also suggested phone-channel and robocall distribution effects.
+
+### FASSD Test File
+
+| Field     | Value                                |
+| --------- | ------------------------------------ |
+| File      | biden_nh_robocall.wav                |
+| Duration  | 33.3 s                               |
+| Test date | 2026-06-24                           |
+| Case ID   | case-biden-nh-robocall               |
+| Source    | Public YouTube copy, 16 kHz mono WAV |
+
+**Speaker notes:**
+This case is difficult because the tested file was not a clean studio file. It passed through a public YouTube or media chain, so compression and channel artifacts are expected.
+
+---
+
+## Slide 30 — Biden Robocall: FASSD Results
+
+### FASSD Evidence Output
+
+| Evidence Axis      | FASSD Result                                 | Evidence Band / Estimate            |
+| ------------------ | -------------------------------------------- | ----------------------------------- |
+| Voice source       | Inconclusive under replay/channel processing | Borderline, raw origin around 88.7% |
+| Replay/rerecording | Elevated replay indicator                    | High, around 96.0%                  |
+| Mixer/channel      | Elevated channel indicator                   | High, around 96.0%                  |
+| Partial segments   | Candidate segments detected                  | Top segment around 96.0%            |
+
+### Highlighted Moments
+
+* 26.0–30.0 s: around 96.0%
+* 30.0–33.3 s: around 96.0%
+* 4.0–8.0 s: low contrast
+
+### Comparison with External Finding
+
+## Agreement level: Mixed / partial agreement
+
+FASSD did not give a clean AI-origin verdict because replay and channel processing dominated the public copy. However, strong replay and channel indicators align with robocall/news-media distribution.
+
+**Speaker notes:**
+This is an honest result. External analysis called it AI-generated, but FASSD produced mixed evidence because the public copy had strong channel effects. This is useful because it shows a real limitation of origin detection under phone-channel compression.
+
+---
+
+## Slide 31 — Case Study 2: Baltimore/Pikesville Principal Audio
+
+### Case Overview
+
+In 2024, an audio recording circulated online that appeared to show a school principal making offensive comments. Later public reporting and investigation described it as fake or AI-generated.
+
+### External Finding
+
+External forensic discussion described signs of AI generation, editing, unnatural pauses, and possible recording-chain manipulation.
+
+### FASSD Test File
+
+| Field     | Value                                |
+| --------- | ------------------------------------ |
+| File      | pikesville_principal.wav             |
+| Duration  | 45.0 s                               |
+| Test date | 2026-06-24                           |
+| Case ID   | case-pikesville-principal            |
+| Source    | Public YouTube copy, 16 kHz mono WAV |
+
+**Speaker notes:**
+This case is important because it affected a local individual, not only a public political figure. It also includes possible editing and partial manipulation, making it a good test for our multi-axis system.
+
+---
+
+## Slide 32 — Pikesville Principal: FASSD Results
+
+### FASSD Evidence Output
+
+| Evidence Axis      | FASSD Result                | Evidence Band / Estimate           |
+| ------------------ | --------------------------- | ---------------------------------- |
+| Voice source       | Likely AI-generated         | Moderate–high, around 96.0%        |
+| Replay/rerecording | Low replay indicator        | Low, around 0.0%                   |
+| Mixer/channel      | Low mixer/channel indicator | Low, around 0.0%                   |
+| Partial segments   | Candidate segments detected | Moderate, top segment around 96.0% |
+
+### Highlighted Moments
+
+* 42.0–45.0 s: around 96.0%
+* 14.0–18.0 s: around 19.9%
+* 22.0–26.0 s: around 12.9%
+
+### Comparison with External Finding
+
+## Agreement level: Broad agreement
+
+FASSD reported elevated AI-origin evidence and partial-segment candidates. This broadly matches public forensic discussion that described the clip as AI-generated and manipulated.
+
+**Speaker notes:**
+In this case, FASSD agrees more strongly with external findings. The origin axis was high, and partial candidate regions were also detected. Replay and mixer indicators were low for the specific public copy we tested.
+
+---
+
+## Slide 33 — Case Study Comparison Summary
+
+### External Findings vs FASSD
+
+| Case                 | External Finding                  | FASSD Output                                                 | Agreement       |
+| -------------------- | --------------------------------- | ------------------------------------------------------------ | --------------- |
+| Biden NH Robocall    | AI-generated robocall             | Borderline origin, high replay/channel, partial candidates   | Mixed / partial |
+| Pikesville Principal | AI-generated or manipulated audio | High origin evidence, partial candidates, low replay/channel | Broad agreement |
+
+### What This Shows
+
+* FASSD can support real-world forensic review
+* Public copies can be affected by compression and channel artifacts
+* Evidence axes explain why a result may be inconclusive
+* Case studies are stronger than only benchmark testing
+
+**Speaker notes:**
+These case studies show both strengths and limitations. FASSD worked well in the Pikesville case but gave mixed evidence on the Biden robocall due to channel processing. This is exactly why multi-axis reporting is useful.
+
+---
+
+## Slide 34 — Final Interface and Report Output
+
+### What the User Receives
+
+After uploading audio, the user receives:
+
+* Plain-language headline
+* Four evidence cards
+* Evidence band for each axis
+* Segment timestamps or moments to replay
+* Report-oriented explanation
+* Safety disclaimer
+* Manual-review recommendation
+
+### Important
+
+## The report is not a legal certificate.
+
+**Speaker notes:**
+The web interface is designed for usability. Instead of raw JSON or model scores, it gives readable evidence cards. But it also clearly warns the user that the result is not legal proof.
+
+---
+
+## Slide 35 — Why Firestore NoSQL Instead of SQL?
+
+### Reason
+
+Firestore was used because the website needed lightweight user history and authentication-linked records.
+
+### Why Firestore Was Suitable
+
+| Reason                    | Explanation                                 |
+| ------------------------- | ------------------------------------------- |
+| Firebase Auth integration | Direct connection with user accounts        |
+| Flexible schema           | Report fields changed during development    |
+| Simple user history       | Each analysis can be stored as one document |
+| Fast deployment           | No separate SQL server needed               |
+| Separate ML backend       | Inference is handled by FastAPI             |
+
+### Important Clarification
+
+## Firestore stores web history, not the full ML inference pipeline.
+
+**Speaker notes:**
+SQL would be useful for a future forensic case-management system with audit trails and chain of custody. But for our FYP web platform, Firestore was enough because the data was simple and document-based.
+
+---
+
+## Slide 36 — Limitations
+
+### Current Limitations
+
+* FASSD is not court-ready
+* Manual review is required
+* Mixer/channel axis has weak recall
+* WhatsApp and phone compression can hide origin cues
+* Partial fabrication is experimental
+* Public copies may lose forensic traces
+* More external validation is needed
+
+### Honest Position
+
+## FASSD is a research prototype and decision-support tool, not a final forensic authority.
+
+**Speaker notes:**
+We are not hiding limitations. For forensic systems, honesty is very important. A system that overclaims can create false accusations, so our wording remains careful.
+
+---
+
+## Slide 37 — Future Work
+
+### Future Improvements
+
+* Larger real-world forensic dataset
+* Better WhatsApp and phone-channel robustness
+* Improved mixer/channel model
+* Stronger partial fabrication localization
+* More public case studies
+* Expert forensic validation
+* Chain-of-custody and case-management support
+* Full PDF/JSON report storage for each analysis
+
+**Speaker notes:**
+The current system is a strong FYP-level foundation. Future work can make it more reliable and closer to a forensic case-management platform.
+
+---
+
+## Slide 38 — Final Contributions
+
+### Main Contributions
+
+1. Complete audio deepfake detection pipeline
+2. Large unified dataset preparation
+3. Multiple model experiments and documented failures
+4. Controlled forensic testing
+5. Final multi-axis evidence architecture
+6. Evidence-band reporting system
+7. Public deployed web application
+8. Real-world case study evaluation
+
+### Biggest Contribution
+
+## Moving from binary detection to multi-axis forensic evidence reporting.
+
+**Speaker notes:**
+The biggest contribution is not only one model. It is the complete journey from research models to a deployed forensic evidence workflow.
+
+---
+
+## Slide 39 — Final Conclusion
+
+### Conclusion
+
+FASSD achieved the official FYP objectives and extended them into a deployed forensic audio decision-support prototype.
+
+The final system:
+
+* Analyzes audio through four evidence axes
+* Provides readable reports
+* Highlights suspicious moments
+* Avoids unsafe fake/real overclaiming
+* Supports manual forensic review
+* Is deployed on a public website
+
+### Final Statement
+
+## FASSD does not replace forensic experts; it helps them know where to look.
+
+**Speaker notes:**
+In conclusion, FASSD is a complete ML and software engineering project. It is not a legal certificate, but it is a strong foundation for forensic audio screening and future research.
+
+---
+
+## Slide 40 — Thank You
+
+# Thank You
+
+## Questions?
+
+**Live Website:**
+https://www.deepfakedetection.dev/
+
+**Repositories:**
+https://github.com/RanaAreeb/FASSD
+https://github.com/MHS-4ever/FYP_FASSD
+
+---
+
+# Backup Viva Questions
+
+## Q1. Why did you not use only one model?
+
+Because different manipulations leave different traces. AI-origin, replay, mixer/channel, and partial fabrication are separate forensic problems. A single fake/real model cannot explain all of them reliably.
+
+## Q2. Why did you not use ResNet as the final model if its EER was very low?
+
+ResNet achieved excellent benchmark results, but failed in broadcast-style real-world testing. We selected the final architecture based on forensic usefulness and reliability, not only benchmark EER.
+
+## Q3. Why was AASIST rejected?
+
+AASIST was tested because it is a strong anti-spoofing model, but in our controlled testing it falsely flagged 22 out of 23 clean human recordings. That false-alarm rate was not safe for final deployment.
+
+## Q4. Can FASSD prove that audio is fake?
+
+No. FASSD is an experimental decision-support prototype. It provides evidence indicators and recommends manual review. It does not issue a court-ready verdict.
+
+## Q5. Why use Firebase NoSQL instead of SQL?
+
+Firestore was suitable because we only needed lightweight user history and Firebase Authentication integration. Our data was document-based and did not require complex SQL joins. The actual ML inference is handled by the FastAPI backend.
+
+## Q6. What is the biggest limitation?
+
+The mixer/channel axis is the weakest because its recall was zero in the release matrix. Platform compression, such as WhatsApp audio, is also a major challenge.
+
+## Q7. What is your biggest contribution?
+
+The biggest contribution is moving from a simple fake/real detector to a multi-axis forensic evidence system with report output and a deployed website.
+
+## Q8. What is the difference between replay evidence and AI-origin evidence?
+
+Replay evidence describes the recording chain, such as speaker playback or rerecording. AI-origin evidence describes whether the voice itself has synthetic indicators. A replayed voice can still be human.
+
+## Q9. Why use evidence bands instead of confidence scores?
+
+Raw confidence scores can be misunderstood. Evidence bands such as low, medium, and high are safer and easier for non-technical users to understand.
+
+## Q10. What is partial fabrication?
+
+Partial fabrication means only part of the audio may be edited or synthetic. FASSD analyzes segments and highlights suspicious moments for manual review.
+
+## Q11. Are you better than existing literature?
+
+We do not claim universal benchmark superiority over all literature models. Our strength is evidence coverage, explainable reporting, multi-axis analysis, real-world case testing, and web deployment.
+
+## Q12. Why does the Biden robocall result show mixed agreement?
+
+Because the public YouTube copy likely passed through phone, media, and re-upload channels. These artifacts can mask AI-origin cues, so FASSD reported strong replay/channel evidence but only borderline origin evidence.
+
+## Q13. Why did the Pikesville case show broad agreement?
+
+Because FASSD detected elevated AI-origin evidence and partial segment candidates, which matched the external forensic discussion that described the audio as AI-generated or manipulated.
+
+## Q14. Can someone misuse your system?
+
+Yes, if they treat its output as final proof. That is why the interface uses safety wording, manual-review recommendations, and avoids legal-certificate language.
+
+## Q15. What would you improve first?
+
+The first improvement would be the mixer/channel axis and compression robustness, especially for WhatsApp, phone calls, and social-media audio.
+
+## Q16. Why did you deploy it as a website?
+
+A website makes the system usable for demonstration and real users. It also proves that the project is not only a training notebook but a complete software product.
+
+## Q17. What database is used and why?
+
+Firebase Firestore is used for authentication-linked user history. It is not used for heavy ML inference. The backend performs analysis and returns results.
+
+## Q18. What happens if someone uploads non-speech audio?
+
+The current system is designed mainly for speech audio. Non-speech or unsupported audio should be treated cautiously and can be handled better in future versions through input validation.
+
+## Q19. Is 100% partial fabrication accuracy final proof?
+
+No. It is 100% on the release matrix only. The partial axis is still experimental and manual-review only.
+
+## Q20. Why is manual review always required?
+
+Because audio forensics is high-risk. False accusations can harm people, and automated systems can fail under compression, replay, or unseen conditions.

@@ -5,7 +5,7 @@ import { useCallback, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { AudioLines, FileUp, FlaskConical, Mic, Shield, TestTube2 } from "lucide-react"
+import { AudioLines, FileUp, FlaskConical, Mic, Shield, TestTube2, type LucideIcon } from "lucide-react"
 import { validateAudioFileForUpload } from "@/lib/upload-limits"
 import { FORENSIC_DISCLAIMER } from "@/lib/copy-safety"
 import { AudioRecorder } from "@/components/audio-recorder"
@@ -19,11 +19,66 @@ interface UploadZoneProps {
 
 const FORMATS = ["WAV", "MP3", "FLAC", "M4A", "OGG", "AMR", "3GP", "WEBM"]
 
+type SpecimenTabId = "upload" | "record" | "samples" | "lab"
+
+const SPECIMEN_TABS: {
+  value: SpecimenTabId
+  label: string
+  shortLabel: string
+  icon: LucideIcon
+  pill: string
+  panelAccent: string
+}[] = [
+  {
+    value: "upload",
+    label: "Upload",
+    shortLabel: "Upload file",
+    icon: FileUp,
+    pill: "bg-sky-500/25 text-sky-200 border-sky-400/60 shadow-[0_0_12px_rgba(56,189,248,0.35)]",
+    panelAccent: "border-sky-500/30 bg-sky-500/5",
+  },
+  {
+    value: "record",
+    label: "Record",
+    shortLabel: "Live recording",
+    icon: Mic,
+    pill: "bg-emerald-500/25 text-emerald-200 border-emerald-400/60 shadow-[0_0_12px_rgba(52,211,153,0.35)]",
+    panelAccent: "border-emerald-500/30 bg-emerald-500/5",
+  },
+  {
+    value: "samples",
+    label: "Test clips",
+    shortLabel: "Bundled samples",
+    icon: TestTube2,
+    pill: "bg-violet-500/25 text-violet-200 border-violet-400/60 shadow-[0_0_12px_rgba(167,139,250,0.35)]",
+    panelAccent: "border-violet-500/30 bg-violet-500/5",
+  },
+  {
+    value: "lab",
+    label: "AI lab",
+    shortLabel: "AI generation",
+    icon: FlaskConical,
+    pill: "bg-amber-500/25 text-amber-200 border-amber-400/60 shadow-[0_0_12px_rgba(251,191,36,0.35)]",
+    panelAccent: "border-amber-500/30 bg-amber-500/5",
+  },
+]
+
+const SPECIMEN_TAB_TRIGGER =
+  "text-xs sm:text-sm rounded-full py-2.5 px-3 font-medium transition-all duration-200 border border-transparent " +
+  "text-muted-foreground hover:text-foreground hover:bg-muted/40 " +
+  "data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-inherit"
+
+function activeSpecimenTab(tabId: string) {
+  return SPECIMEN_TABS.find((t) => t.value === tabId) ?? SPECIMEN_TABS[0]
+}
+
 export function UploadZone({ onFileUpload, isProcessing }: UploadZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false)
   const [selectedName, setSelectedName] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState("upload")
+  const [activeTab, setActiveTab] = useState<SpecimenTabId>("upload")
+  const currentTab = activeSpecimenTab(activeTab)
+  const CurrentIcon = currentTab.icon
 
   const handleFile = useCallback(
     async (file: File) => {
@@ -98,27 +153,37 @@ export function UploadZone({ onFileUpload, isProcessing }: UploadZoneProps) {
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full text-left">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
-            <TabsTrigger value="upload" className="text-xs sm:text-sm">
-              <FileUp className="w-3.5 h-3.5 mr-1.5" />
-              Upload
-            </TabsTrigger>
-            <TabsTrigger value="record" className="text-xs sm:text-sm">
-              <Mic className="w-3.5 h-3.5 mr-1.5" />
-              Record
-            </TabsTrigger>
-            <TabsTrigger value="samples" className="text-xs sm:text-sm">
-              <TestTube2 className="w-3.5 h-3.5 mr-1.5" />
-              Test clips
-            </TabsTrigger>
-            <TabsTrigger value="lab" className="text-xs sm:text-sm">
-              <FlaskConical className="w-3.5 h-3.5 mr-1.5" />
-              AI lab
-            </TabsTrigger>
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as SpecimenTabId)} className="w-full text-left">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-2 p-2 bg-muted/30 border border-border/50 rounded-2xl">
+            {SPECIMEN_TABS.map((tab) => {
+              const Icon = tab.icon
+              const isActive = activeTab === tab.value
+              return (
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className={`${SPECIMEN_TAB_TRIGGER} ${isActive ? `${tab.pill} font-semibold` : ""}`}
+                >
+                  <Icon className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                  {tab.label}
+                </TabsTrigger>
+              )
+            })}
           </TabsList>
 
-          <TabsContent value="upload" className="mt-5 space-y-6">
+          <div
+            className={`mt-5 rounded-xl border p-4 sm:p-5 transition-colors duration-300 ${currentTab.panelAccent}`}
+          >
+            <div className="flex justify-center sm:justify-start mb-4">
+              <span
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-wide ${currentTab.pill}`}
+              >
+                <CurrentIcon className="w-3.5 h-3.5 shrink-0" />
+                You are in: {currentTab.shortLabel}
+              </span>
+            </div>
+
+          <TabsContent value="upload" className="mt-0 space-y-6">
             <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center">
               <FileUp className="w-7 h-7 text-primary" strokeWidth={1.5} />
             </div>
@@ -151,17 +216,18 @@ export function UploadZone({ onFileUpload, isProcessing }: UploadZoneProps) {
             </div>
           </TabsContent>
 
-          <TabsContent value="record" className="mt-5">
+          <TabsContent value="record" className="mt-0">
             <AudioRecorder onRecorded={handleFile} disabled={isProcessing} />
           </TabsContent>
 
-          <TabsContent value="samples" className="mt-5">
+          <TabsContent value="samples" className="mt-0">
             <TestSamplesPanel onSampleSelected={handleFile} disabled={isProcessing} />
           </TabsContent>
 
-          <TabsContent value="lab" className="mt-5">
+          <TabsContent value="lab" className="mt-0">
             <AiLabPanel onFileReady={handleFile} disabled={isProcessing} />
           </TabsContent>
+          </div>
         </Tabs>
 
         <div className="flex flex-wrap items-center justify-center gap-6 text-[11px] text-muted-foreground">
@@ -169,7 +235,7 @@ export function UploadZone({ onFileUpload, isProcessing }: UploadZoneProps) {
             <Shield className="w-3.5 h-3.5 text-primary/70" />
             {FORENSIC_DISCLAIMER}
           </span>
-          <span>5s–5min · Max 50 MB · Human speech only (no animal/ringtone)</span>
+          <span>5s-5min · Max 50 MB · Human speech only (no animal/ringtone)</span>
         </div>
 
         {selectedName && !isProcessing && (

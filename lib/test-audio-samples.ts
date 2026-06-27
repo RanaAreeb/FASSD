@@ -69,14 +69,14 @@ export const TEST_AUDIO_SAMPLES: TestAudioSample[] = [
     label: "biden_nh_robocall.wav",
     category: "Real-world case study",
     path: "/test/case_studies/biden_nh_robocall.wav",
-    hint: "Biden NH robocall — public YouTube extract",
+    hint: "Biden NH robocall, public YouTube extract",
   },
   {
     id: "case-pikesville-principal",
     label: "pikesville_principal.wav",
     category: "Real-world case study",
     path: "/test/case_studies/pikesville_principal.wav",
-    hint: "Pikesville principal deepfake — public YouTube extract",
+    hint: "Pikesville principal deepfake, public YouTube extract",
   },
 ]
 

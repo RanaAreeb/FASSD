@@ -20,7 +20,7 @@ import {
   type MicPlatform,
 } from "@/lib/microphone-access"
 
-const RECORD_READ_ALOUD_SCRIPT = `Hello, this is a voice integrity screening test. I am recording my own speech so the system can check for signs of synthetic audio, replay artifacts, or edited segments. I will speak at a normal pace, in a quiet room, without background music or animal sounds. This recording is only for demonstration and manual review — not a legal verdict.`
+const RECORD_READ_ALOUD_SCRIPT = `Hello, this is a voice integrity screening test. I am recording my own speech so the system can check for signs of synthetic audio, replay artifacts, or edited segments. I will speak at a normal pace, in a quiet room, without background music or animal sounds. This recording is only for demonstration and manual review, not a legal verdict.`
 
 interface AudioRecorderProps {
   onRecorded: (file: File) => void
@@ -212,7 +212,7 @@ export function AudioRecorder({ onRecorded, disabled }: AudioRecorderProps) {
   return (
     <div className="space-y-4 text-left">
       <p className="text-sm text-muted-foreground leading-relaxed">
-        Record yourself for a quick live test. Read the paragraph below aloud — aim for at least{" "}
+        Record yourself for a quick live test. Read the paragraph below aloud. Aim for at least{" "}
         {MIN_AUDIO_DURATION_SECONDS} seconds of clear human speech.
       </p>
 
@@ -236,7 +236,7 @@ export function AudioRecorder({ onRecorded, disabled }: AudioRecorderProps) {
       {insecure && !lanBlocked && (
         <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-xs text-amber-100/90 leading-relaxed">
           Microphone needs a <strong>secure page</strong>. Open{" "}
-          <span className="font-mono">http://localhost:3000</span> or your HTTPS domain — not plain HTTP on a
+          <span className="font-mono">http://localhost:3000</span> or your HTTPS domain, not plain HTTP on a
           non-localhost host. The browser will not show a permission popup on insecure pages.
         </div>
       )}
@@ -278,7 +278,7 @@ export function AudioRecorder({ onRecorded, disabled }: AudioRecorderProps) {
         ) : (
           <p>
             <span className="font-medium text-foreground">Step 1:</span> Click{" "}
-            <span className="font-medium">Allow microphone</span> — your browser should show an Allow / Block popup.
+            <span className="font-medium">Allow microphone</span>. Your browser should show an Allow / Block popup.
             Choose <span className="font-medium">Allow</span>.
           </p>
         )}
