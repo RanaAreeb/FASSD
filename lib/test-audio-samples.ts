@@ -6,8 +6,31 @@ export interface TestAudioSample {
   hint: string
 }
 
-/** Curated clips from /public/test for quick FYP panel demos. */
+const CASE_STUDY_CATEGORY = "Real-world case study"
+
+/** Curated clips from /public/test for quick FYP panel demos. Case studies listed first. */
 export const TEST_AUDIO_SAMPLES: TestAudioSample[] = [
+  {
+    id: "case-pikesville-principal",
+    label: "pikesville_principal.wav",
+    category: CASE_STUDY_CATEGORY,
+    path: "/test/case_studies/pikesville_principal.wav",
+    hint: "Pikesville principal deepfake, public YouTube extract",
+  },
+  {
+    id: "case-saqib-nisar-leaked",
+    label: "saqib_nisar_leaked.wav",
+    category: CASE_STUDY_CATEGORY,
+    path: "/test/case_studies/saqib_nisar_leaked.wav",
+    hint: "Saqib Nisar leaked audio, public YouTube news extract",
+  },
+  {
+    id: "case-biden-robocall",
+    label: "biden_nh_robocall.wav",
+    category: CASE_STUDY_CATEGORY,
+    path: "/test/case_studies/biden_nh_robocall.wav",
+    hint: "Biden NH robocall, public YouTube extract",
+  },
   {
     id: "human-clean-001",
     label: "Human_001.wav",
@@ -63,20 +86,6 @@ export const TEST_AUDIO_SAMPLES: TestAudioSample[] = [
     category: "Mixed (AI base)",
     path: "/test/dataset_ai_mixed/AI_001_mixed.mp3",
     hint: "AI audio with inserted human segment",
-  },
-  {
-    id: "case-biden-robocall",
-    label: "biden_nh_robocall.wav",
-    category: "Real-world case study",
-    path: "/test/case_studies/biden_nh_robocall.wav",
-    hint: "Biden NH robocall, public YouTube extract",
-  },
-  {
-    id: "case-pikesville-principal",
-    label: "pikesville_principal.wav",
-    category: "Real-world case study",
-    path: "/test/case_studies/pikesville_principal.wav",
-    hint: "Pikesville principal deepfake, public YouTube extract",
   },
 ]
 

@@ -89,8 +89,7 @@ export function TestSamplesPanel({ onSampleSelected, disabled }: TestSamplesPane
   return (
     <div className="space-y-4 text-left">
       <p className="text-sm text-muted-foreground leading-relaxed">
-        One-click samples from <span className="font-mono text-xs">/public/test</span> for FYP demos: human, AI,
-        repeat, and mixed clips.
+        One-click samples from <span className="font-mono text-xs">/public/test</span> for FYP demos. Real-world case studies are listed first, then human, AI, repeat, and mixed clips.
       </p>
 
       <div className="space-y-4 max-h-72 overflow-y-auto pr-1">

@@ -202,7 +202,7 @@ export function AiLabPanel({ onFileReady, disabled }: AiLabPanelProps) {
         <div className="flex items-center justify-between gap-3 text-[11px] text-muted-foreground">
           <p>
             Type or paste your own script. Target at least {AI_LAB_MIN_DURATION_SECONDS} seconds (~150+ words). No
-            silence is added.
+            silence is added. Full default text can take 1–3 minutes to generate.
           </p>
           <span className="font-mono shrink-0">{prompt.length}/2000</span>
         </div>

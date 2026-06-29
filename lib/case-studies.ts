@@ -34,7 +34,7 @@ export interface CaseStudyRecord {
 export const CASE_STUDIES_INTRO = {
   title: "Real-World Audio Deepfake Case Studies",
   whySelected:
-    "These case studies test FASSD on public real-world deepfake audio incidents, not only on controlled benchmark datasets. Both cases received public attention and were later discussed by investigators, journalists, or audio-forensic experts. The purpose is to compare external forensic findings with the evidence indicators produced by FASSD.",
+    "These case studies test FASSD on public real-world deepfake and leaked-audio incidents, not only on controlled benchmark datasets. The clips received public attention through news coverage and social media. The purpose is to compare external reporting with the evidence indicators produced by FASSD.",
   disclaimer:
     "FASSD does not issue a legal certificate or a final court-ready verdict. It provides experimental evidence across multiple axes: voice origin, replay or rerecording, mixer/channel processing, and edited or partial-fabrication candidate regions. Results below should be read as decision-support evidence for manual review.",
   footerDisclaimer:
@@ -42,58 +42,6 @@ export const CASE_STUDIES_INTRO = {
 }
 
 export const REAL_WORLD_CASE_STUDIES: CaseStudyRecord[] = [
-  {
-    id: "biden-nh-robocall",
-    slug: "biden-nh-robocall",
-    title: "Biden New Hampshire Robocall",
-    subtitle: "January 2024 political robocall, phone-channel AI voice clone",
-    youtubeUrl: "https://www.youtube.com/watch?v=FCs_zFbkf0M",
-    overview:
-      "In January 2024, a robocall imitating President Joe Biden was sent to voters in New Hampshire before the state primary. The call used a cloned voice message and encouraged voters not to participate in the primary. The case became one of the most public examples of AI-generated political audio misuse because it combined voice cloning, robocall distribution, and election-related misinformation. The public YouTube copy used here is useful for FASSD because it represents a phone-channel deepfake that passed through a news-media recording chain rather than a clean studio file.",
-    externalFinding:
-      "External analysis identified the robocall as AI-generated voice audio. Pindrop reported that the clip showed synthetic voice evidence and was likely created using ElevenLabs or a similar text-to-speech system. Their analysis also used segment-level scoring, which makes this case useful for comparison with FASSD's segment and evidence-card approach.",
-    audioFilename: "biden_nh_robocall.wav",
-    audioPath: "/test/case_studies/biden_nh_robocall.wav",
-    durationSec: 33.26,
-    durationLabel: "33.3 s",
-    testDate: "2026-06-24",
-    caseId: "case-biden-nh-robocall",
-    sourceNote:
-      "Audio extracted from the public YouTube clip (16 kHz mono WAV). Channel compression and re-upload artifacts are expected.",
-    origin: {
-      result: "Inconclusive under replay/channel processing",
-      band: "Borderline (raw origin indicator ~88.7%)",
-      screeningScore: "~88.7%",
-      interpretation:
-        "The SSL origin model produced a borderline AI-origin indicator (~88.7%), but FASSD downgraded the user-facing origin label because elevated replay and mixer/channel evidence dominated the recording chain. This is consistent with a robocall or news-media copy where channel processing can mask origin cues. This is experimental evidence only, not a conclusive authenticity decision.",
-    },
-    replay: {
-      result: "Elevated replay/rerecording indicator",
-      band: "High",
-      screeningScore: "~96.0%",
-      interpretation:
-        "Strong replay/rerecording indicators were observed across the file. This does not mean the voice is human. It reflects that the public copy likely passed through phone, broadcast, or re-recording chains. Review together with mixer/channel evidence.",
-    },
-    mixer: {
-      result: "Elevated mixer/channel indicator",
-      band: "High",
-      screeningScore: "~96.0%",
-      interpretation:
-        "Elevated mixer/channel processing evidence was detected. For this case, channel artifacts overlap with replay indicators and are expected for a robocall distributed through public media.",
-    },
-    partial: {
-      result: "Localized partial-fabrication candidate segments",
-      band: "Moderate (coexists with channel context)",
-      screeningScore: "Top segment ~96.0%",
-      interpretation:
-        "Segment-level candidates were highlighted for manual review, with the strongest contrast at the end of the clip. Partial evidence coexists with replay/mixer context, so segments should be reviewed alongside channel indicators rather than as standalone proof of splicing.",
-      topSegments: "26.0–30.0 s (~96.0%); 30.0–33.3 s (~96.0%); 4.0–8.0 s (low contrast)",
-    },
-    agreementLevel: "Mixed / partial agreement",
-    comparisonSummary:
-      "External forensics described this robocall as AI-generated synthetic voice audio. FASSD produced mixed evidence: a borderline raw origin score (~88.7%) but an inconclusive origin label once replay and mixer/channel dominance were applied. Elevated replay and channel indicators align with the known robocall/news-media distribution path. FASSD did not emit a clean single-axis AI-origin verdict on this public copy, which is documented as a limitation when phone-channel compression and re-recording reduce origin reliability.",
-    fusionStatus: "suspicious_mixed_evidence_experimental",
-  },
   {
     id: "pikesville-principal",
     slug: "pikesville-principal",
@@ -144,6 +92,110 @@ export const REAL_WORLD_CASE_STUDIES: CaseStudyRecord[] = [
     agreementLevel: "Broad agreement",
     comparisonSummary:
       "FASSD broadly agrees with the external forensic discussion on this public copy. The system reports elevated AI-origin evidence together with partial-segment manipulation candidates, which is consistent with public reporting that described the clip as AI-generated and edited or processed. Replay and mixer axes were not dominant on this YouTube extract.",
+    fusionStatus: "suspicious_mixed_evidence_experimental",
+  },
+  {
+    id: "saqib-nisar-leaked",
+    slug: "saqib-nisar-leaked",
+    title: "Saqib Nisar Leaked Audio (Pakistan)",
+    subtitle: "2024–2025 news leak, YouTube news-media recording chain",
+    youtubeUrl: "https://www.youtube.com/watch?v=0Tqj6saDkCg",
+    overview:
+      "A leaked audio clip circulated on Pakistani news channels and YouTube alleging comments attributed to former Chief Justice Saqib Nisar regarding the detention of Nawaz Sharif and Maryam Nawaz. The story spread rapidly through broadcast and social media re-uploads. This case is useful for FASSD because it represents a politically sensitive leak distributed through a heavy news/YouTube compression chain rather than a clean studio recording.",
+    externalFinding:
+      "Public news coverage treated the clip as a major breaking story. External authenticity debate focused on whether the voice was genuine, edited, or synthetically manipulated. No court-certified forensic certificate was available in public sources at the time of this demo. FASSD is used here to show what experimental multi-axis indicators look like on a real leaked news clip.",
+    audioFilename: "saqib_nisar_leaked.wav",
+    audioPath: "/test/case_studies/saqib_nisar_leaked.wav",
+    durationSec: 80.09,
+    durationLabel: "80.1 s",
+    testDate: "2026-06-29",
+    caseId: "CASE-6FB7A91B64B9",
+    sourceNote:
+      "Audio extracted from the public YouTube clip (16 kHz mono WAV). News re-upload and broadcast compression artifacts are expected.",
+    origin: {
+      result: "Inconclusive under replay/channel processing",
+      band: "Moderate (raw origin ~62.0%, below 0.92 gate)",
+      screeningScore: "~62.0%",
+      interpretation:
+        "The SSL origin score was moderately elevated (~62.0%) but below the 0.92 detection threshold. FASSD downgraded the user-facing origin label because replay and mixer/channel evidence dominated the recording chain. This does not prove the voice is human or AI. It reflects reduced origin reliability on a news/YouTube copy.",
+    },
+    replay: {
+      result: "Elevated replay/rerecording indicator",
+      band: "High",
+      screeningScore: "~99.1%",
+      interpretation:
+        "Very strong replay/rerecording indicators were observed. This reflects the public news/YouTube distribution path (re-upload, phone/broadcast chains) rather than a final legal finding about voice authenticity.",
+    },
+    mixer: {
+      result: "Elevated mixer/channel indicator",
+      band: "High",
+      screeningScore: "~99.1%",
+      interpretation:
+        "Elevated mixer/channel processing evidence was detected and overlapped with replay indicators. Channel artifacts are expected for leaked clips circulated through news media and social platforms.",
+    },
+    partial: {
+      result: "Localized partial-fabrication candidate segments",
+      band: "High (coexists with channel context)",
+      screeningScore: "Top segment ~99.3%",
+      interpretation:
+        "Segment-level candidates were highlighted for manual review, with the strongest contrast around 36–40 s. Partial evidence coexists with replay/mixer dominance, so segments should be reviewed alongside channel indicators rather than as standalone proof of splicing.",
+      topSegments: "36.0–40.0 s (~99.3%); 76.0–80.0 s (~99.0%); 38.0–42.0 s (~93.0%)",
+    },
+    agreementLevel: "Channel-dominated / origin inconclusive",
+    comparisonSummary:
+      "On this public YouTube copy, FASSD did not emit a clean AI-origin verdict. Origin remained inconclusive (~62.0%) while replay and mixer/channel axes were very high (~99%). This pattern is consistent with a leaked news-media clip where recording-chain artifacts dominate. Partial segment candidates were still surfaced for optional manual review. FASSD does not prove whether the leak is authentic, fabricated, or edited.",
+    fusionStatus: "suspicious_mixed_evidence_experimental",
+  },
+  {
+    id: "biden-nh-robocall",
+    slug: "biden-nh-robocall",
+    title: "Biden New Hampshire Robocall",
+    subtitle: "January 2024 political robocall, phone-channel AI voice clone",
+    youtubeUrl: "https://www.youtube.com/watch?v=FCs_zFbkf0M",
+    overview:
+      "In January 2024, a robocall imitating President Joe Biden was sent to voters in New Hampshire before the state primary. The call used a cloned voice message and encouraged voters not to participate in the primary. The case became one of the most public examples of AI-generated political audio misuse because it combined voice cloning, robocall distribution, and election-related misinformation. The public YouTube copy used here is useful for FASSD because it represents a phone-channel deepfake that passed through a news-media recording chain rather than a clean studio file.",
+    externalFinding:
+      "External analysis identified the robocall as AI-generated voice audio. Pindrop reported that the clip showed synthetic voice evidence and was likely created using ElevenLabs or a similar text-to-speech system. Their analysis also used segment-level scoring, which makes this case useful for comparison with FASSD's segment and evidence-card approach.",
+    audioFilename: "biden_nh_robocall.wav",
+    audioPath: "/test/case_studies/biden_nh_robocall.wav",
+    durationSec: 33.26,
+    durationLabel: "33.3 s",
+    testDate: "2026-06-24",
+    caseId: "case-biden-nh-robocall",
+    sourceNote:
+      "Audio extracted from the public YouTube clip (16 kHz mono WAV). Channel compression and re-upload artifacts are expected.",
+    origin: {
+      result: "Inconclusive under replay/channel processing",
+      band: "Borderline (raw origin indicator ~88.7%)",
+      screeningScore: "~88.7%",
+      interpretation:
+        "The SSL origin model produced a borderline AI-origin indicator (~88.7%), but FASSD downgraded the user-facing origin label because elevated replay and mixer/channel evidence dominated the recording chain. This is consistent with a robocall or news-media copy where channel processing can mask origin cues. This is experimental evidence only, not a conclusive authenticity decision.",
+    },
+    replay: {
+      result: "Elevated replay/rerecording indicator",
+      band: "High",
+      screeningScore: "~96.0%",
+      interpretation:
+        "Strong replay/rerecording indicators were observed across the file. This does not mean the voice is human. It reflects that the public copy likely passed through phone, broadcast, or re-recording chains. Review together with mixer/channel evidence.",
+    },
+    mixer: {
+      result: "Elevated mixer/channel indicator",
+      band: "High",
+      screeningScore: "~96.0%",
+      interpretation:
+        "Elevated mixer/channel processing evidence was detected. For this case, channel artifacts overlap with replay indicators and are expected for a robocall distributed through public media.",
+    },
+    partial: {
+      result: "Localized partial-fabrication candidate segments",
+      band: "Moderate (coexists with channel context)",
+      screeningScore: "Top segment ~96.0%",
+      interpretation:
+        "Segment-level candidates were highlighted for manual review, with the strongest contrast at the end of the clip. Partial evidence coexists with replay/mixer context, so segments should be reviewed alongside channel indicators rather than as standalone proof of splicing.",
+      topSegments: "26.0–30.0 s (~96.0%); 30.0–33.3 s (~96.0%); 4.0–8.0 s (low contrast)",
+    },
+    agreementLevel: "Mixed / partial agreement",
+    comparisonSummary:
+      "External forensics described this robocall as AI-generated synthetic voice audio. FASSD produced mixed evidence: a borderline raw origin score (~88.7%) but an inconclusive origin label once replay and mixer/channel dominance were applied. Elevated replay and channel indicators align with the known robocall/news-media distribution path. FASSD did not emit a clean single-axis AI-origin verdict on this public copy, which is documented as a limitation when phone-channel compression and re-recording reduce origin reliability.",
     fusionStatus: "suspicious_mixed_evidence_experimental",
   },
 ]

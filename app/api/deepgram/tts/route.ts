@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server"
 
 const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY?.trim() || ""
 const MAX_TEXT_LENGTH = 2000
+/** Full lab paragraphs (~60s speech) can take 1–3 minutes to synthesize. */
+const TTS_TIMEOUT_MS = 180_000
+
+export const maxDuration = 300
 
 export async function POST(request: NextRequest) {
   const authorization = request.headers.get("authorization")
@@ -45,7 +49,7 @@ export async function POST(request: NextRequest) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ text }),
-      signal: AbortSignal.timeout(60_000),
+      signal: AbortSignal.timeout(TTS_TIMEOUT_MS),
     })
 
     if (!upstream.ok) {
@@ -63,7 +67,12 @@ export async function POST(request: NextRequest) {
       headers: { "Content-Type": contentType },
     })
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Deepgram request failed"
+    const raw = err instanceof Error ? err.message : "Deepgram request failed"
+    const timedOut =
+      raw.includes("timeout") || raw.includes("aborted") || raw.includes("AbortError")
+    const message = timedOut
+      ? `Deepgram took longer than ${TTS_TIMEOUT_MS / 1000}s to generate audio. Try a shorter script, or wait and retry.`
+      : raw
     return NextResponse.json({ error: message }, { status: 502 })
   }
 }
