@@ -180,7 +180,9 @@ function normalizeEvidenceAxisCards(cards: EvidenceAxisCard[], data: Phase9Analy
     if (partialGateNotFired) {
       return {
         ...card,
-        score_text: `Screening score: ${formatScreeningScore(probability)} · Evidence strength: Low evidence (gate: Not detected)`,
+        user_text:
+          "No partial-fabrication evidence was confirmed. The internal segment scan score is shown for transparency only. Because the detection gate reports Not detected, it is not treated as confirmed evidence.",
+        score_text: `Internal segment scan: ${formatScreeningScore(probability)} · Evidence strength: Low evidence (gate: Not detected)`,
       }
     }
 

@@ -23,6 +23,20 @@ export function isPartialAxisDetected(cards: EvidenceAxisCard[]): boolean {
   return status.includes("detected") && !status.includes("not detected")
 }
 
+/** Raw partial segment scores can spike without the gate confirming fabrication. */
+export function effectivePartialProbability(
+  partialProb: number,
+  cards: EvidenceAxisCard[],
+): number {
+  return isPartialAxisDetected(cards) ? partialProb : 0
+}
+
+export function isPartialGateNotDetected(cards: EvidenceAxisCard[]): boolean {
+  const card = cards.find((c) => c.axis_name.toLowerCase().includes("partial"))
+  if (!card?.status) return false
+  return card.status.toLowerCase().includes("not detected")
+}
+
 export function isClearHumanAxisProfile(
   originProb: number,
   replayProb: number,
@@ -33,11 +47,12 @@ export function isClearHumanAxisProfile(
 ): boolean {
   if (opts?.sslDetected || opts?.strongForensic) return false
   if (isPartialAxisDetected(cards)) return false
+  const effectivePartial = effectivePartialProbability(partialProb, cards)
   return (
     originProb < CLEAR_HUMAN_AXIS_MAX &&
     replayProb < CLEAR_HUMAN_AXIS_MAX &&
     mixerProb < CLEAR_HUMAN_AXIS_MAX &&
-    partialProb < CLEAR_HUMAN_AXIS_MAX
+    effectivePartial < CLEAR_HUMAN_AXIS_MAX
   )
 }
 
@@ -99,11 +114,13 @@ export function applyClearHumanProfileCopy(
     recommendation: "No urgent review suggested from screening scores.",
     highlightedSegmentText: undefined,
     plainLanguageExplanation:
-      "All axis screening scores are low. No strong AI-origin, replay, channel, or partial-fabrication indicators were detected. This does not prove authenticity.",
+      "All confirmed screening axes are low. No strong AI-origin, replay, channel, or partial-fabrication indicators were detected. This does not prove authenticity.",
     severityLevel: "clear",
     manualReviewRequired: false,
     confidenceText: "Evidence strength: Low evidence",
     evidenceAxisCards: cleanedCards,
+    segmentRows: [],
+    segmentHighlights: [],
   }
 }
 

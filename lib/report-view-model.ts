@@ -5,6 +5,7 @@ import {
   strengthLabelFromCard,
   evidenceStrengthFromProbability,
   isClearHumanAxisProfile,
+  isPartialGateNotDetected,
   normalizeCardsForClearHuman,
 } from "@/lib/forensic-consistency"
 
@@ -198,13 +199,10 @@ export function buildReportViewModelFromPayload(
       },
       {
         label: "Partial segment evidence",
-        // When the detection gate did not fire, show the max segment probability only as context,
-        // not as a confirmed evidence score. The gate outcome drives the strength label.
         probability: fmtProb(partial?.max_segment_probability ?? partial?.probability),
-        strength:
-          partial?.evidence_detected === false
-            ? "Low evidence (gate: Not detected)"
-            : fmtStrength(partial, displayCards, "Partial"),
+        strength: isPartialGateNotDetected(cards) || partial?.evidence_detected === false
+          ? "Low evidence (gate: Not detected)"
+          : fmtStrength(partial, displayCards, "Partial"),
       },
     ],
     limitations,

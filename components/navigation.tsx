@@ -87,19 +87,19 @@ export function Navigation() {
               </div>
             )}
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {showLoggedInNav ? (
                 <>
                   <Link href="/dashboard" className="hidden sm:block">
                     <Button
                       variant="ghost"
-                      className="text-foreground/80 hover:text-primary hover:bg-primary/5 font-medium px-6 rounded-full transition-all duration-300"
+                      className="text-foreground/80 hover:text-primary hover:bg-primary/5 font-medium px-4 sm:px-6 rounded-full transition-all duration-300"
                     >
                       Dashboard
                     </Button>
                   </Link>
-                  <Link href="/profile" className="hidden lg:block">
-                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 lg:px-8 py-2 lg:py-3 rounded-full glow-effect font-medium transition-all duration-300 hover:scale-105">
+                  <Link href="/profile" className="hidden sm:block">
+                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 sm:px-6 lg:px-8 py-2 rounded-full glow-effect font-medium transition-all duration-300 hover:scale-105">
                       Profile
                     </Button>
                   </Link>
@@ -109,13 +109,13 @@ export function Navigation() {
                   <Link href="/signin" className="hidden sm:block">
                     <Button
                       variant="ghost"
-                      className="text-foreground/80 hover:text-primary hover:bg-primary/5 font-medium px-6 rounded-full transition-all duration-300"
+                      className="text-foreground/80 hover:text-primary hover:bg-primary/5 font-medium px-4 sm:px-6 rounded-full transition-all duration-300"
                     >
                       Sign In
                     </Button>
                   </Link>
-                  <Link href="/signup">
-                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 lg:px-8 py-2 lg:py-3 rounded-full glow-effect font-medium transition-all duration-300 hover:scale-105">
+                  <Link href="/signup" className="hidden sm:block">
+                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 sm:px-6 lg:px-8 py-2 rounded-full glow-effect font-medium transition-all duration-300 hover:scale-105">
                       Get Started
                     </Button>
                   </Link>
@@ -143,42 +143,51 @@ export function Navigation() {
         </div>
 
         <div
-          className={`lg:hidden transition-all duration-300 overflow-hidden ${
-            isMobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+          className={`lg:hidden transition-all duration-300 ${
+            isMobileMenuOpen
+              ? "max-h-[calc(100dvh-4rem)] opacity-100 overflow-y-auto overscroll-contain"
+              : "max-h-0 opacity-0 overflow-hidden"
           }`}
         >
-          <div className="glass-morphism border-t border-border/30 mx-4 mb-4 rounded-2xl p-6">
-            <div className="flex flex-col gap-4">
+          <div className="glass-morphism border-t border-border/30 mx-3 mt-1 mb-6 rounded-2xl p-5 pb-[calc(2rem+env(safe-area-inset-bottom,0px))]">
+            <div className="flex flex-col gap-0.5">
               {showHomeNavLinks && HOME_NAV_LINKS.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="text-foreground/80 hover:text-primary transition-colors font-medium py-2"
+                  className="text-foreground/80 hover:text-primary transition-colors font-medium py-2.5 px-2 rounded-xl hover:bg-primary/5"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.name}
                 </Link>
               ))}
-              <div className="pt-4 border-t border-border/30">
+              <div className={`flex flex-col gap-2 ${showHomeNavLinks ? "pt-3 mt-2 border-t border-border/30" : ""}`}>
                 {showLoggedInNav ? (
                   <>
                     <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button variant="ghost" className="w-full mb-2 rounded-full">
+                      <Button variant="ghost" className="w-full rounded-full justify-center">
                         Dashboard
                       </Button>
                     </Link>
                     <Link href="/profile" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button variant="default" className="w-full rounded-full">
+                      <Button variant="default" className="w-full rounded-full justify-center glow-effect">
                         Profile
                       </Button>
                     </Link>
                   </>
                 ) : (
-                  <Link href="/signin" onClick={() => setIsMobileMenuOpen(false)}>
-                    <Button variant="ghost" className="w-full mb-2 rounded-full">
-                      Sign In
-                    </Button>
-                  </Link>
+                  <>
+                    <Link href="/signin" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button variant="ghost" className="w-full rounded-full justify-center">
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button variant="default" className="w-full rounded-full justify-center glow-effect">
+                        Get Started
+                      </Button>
+                    </Link>
+                  </>
                 )}
               </div>
             </div>

@@ -124,14 +124,14 @@ function ProfileContent() {
     <div className="min-h-screen bg-gradient-to-br from-background via-card to-background pt-24 pb-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="glass-effect border-border/50 mb-8">
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-4">
-                <div className="relative group">
-                  <Avatar className="w-20 h-20 border-2 border-primary/30">
+          <CardHeader className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                <div className="relative group shrink-0">
+                  <Avatar className="w-16 h-16 sm:w-20 sm:h-20 border-2 border-primary/30">
                     <AvatarImage src={avatarUrl || undefined} alt={displayName} />
-                    <AvatarFallback className="bg-primary/20 text-primary text-xl font-semibold">
-                      {initials || <User className="w-8 h-8" />}
+                    <AvatarFallback className="bg-primary/20 text-primary text-lg sm:text-xl font-semibold">
+                      {initials || <User className="w-7 h-7 sm:w-8 sm:h-8" />}
                     </AvatarFallback>
                   </Avatar>
                   <input
@@ -145,25 +145,25 @@ function ProfileContent() {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={avatarLoading}
-                    className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors shadow-lg"
+                    className="absolute bottom-0 right-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors shadow-lg"
                   >
                     {avatarLoading ? (
-                      <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                      <div className="w-3.5 h-3.5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <Camera className="w-4 h-4" />
+                      <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     )}
                   </button>
                 </div>
-                <div>
-                  <CardTitle className="text-2xl">{displayName}</CardTitle>
-                  <CardDescription className="flex items-center gap-2 mt-1">
-                    <Mail className="w-4 h-4" />
-                    {userProfile?.email || user?.email}
+                <div className="min-w-0">
+                  <CardTitle className="text-xl sm:text-2xl truncate">{displayName}</CardTitle>
+                  <CardDescription className="flex items-center gap-1.5 mt-1 min-w-0">
+                    <Mail className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate text-xs sm:text-sm">{userProfile?.email || user?.email}</span>
                   </CardDescription>
-                  <p className="text-xs text-muted-foreground mt-1">Click camera icon to change avatar</p>
+                  <p className="text-xs text-muted-foreground mt-1">Tap camera icon to change avatar</p>
                 </div>
               </div>
-              <Button variant="outline" onClick={handleSignOut} className="gap-2">
+              <Button variant="outline" onClick={handleSignOut} className="gap-2 shrink-0 self-start sm:self-auto w-full sm:w-auto">
                 <LogOut className="w-4 h-4" />
                 Sign Out
               </Button>
@@ -189,45 +189,46 @@ function ProfileContent() {
                 No audio analyses yet. Upload audio in the dashboard to get started.
               </p>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {audioHistory.map((analysis) => (
                   <div
                     key={analysis.id}
-                    className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50 hover:border-primary/30 transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 rounded-lg bg-muted/30 border border-border/50 hover:border-primary/30 transition-colors"
                   >
-                    <div>
-                      <div className="font-medium">{analysis.filename}</div>
-                      <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-sm sm:text-base truncate">{analysis.filename}</div>
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1 text-xs text-muted-foreground">
                         <span>{analysis.fileSize}</span>
                         <span>•</span>
                         <span>{new Date(analysis.createdAt).toLocaleDateString()}</span>
                       </div>
-                      <div className="flex items-center gap-2 mt-2">
+                      <div className="flex flex-wrap items-center gap-1.5 mt-2">
                         {analysis.attackType === "inconclusive" ? (
-                          <Badge variant="secondary" className="bg-amber-500/20 text-amber-500">
+                          <Badge variant="secondary" className="bg-amber-500/20 text-amber-500 text-[11px]">
                             Inconclusive
                           </Badge>
                         ) : (
                           <Badge
                             variant={analysis.isDeepfake ? "destructive" : "secondary"}
-                            className={!analysis.isDeepfake ? "bg-green-500/20 text-green-600" : ""}
+                            className={`text-[11px] ${!analysis.isDeepfake ? "bg-green-500/20 text-green-600" : ""}`}
                           >
                             {analysis.isDeepfake ? "Indicators present" : "No strong indicators"}
                           </Badge>
                         )}
                         {analysis.attackType && analysis.attackType !== "bonafide" && analysis.attackType !== "inconclusive" && (
-                          <Badge variant="outline">{analysis.attackType}</Badge>
+                          <Badge variant="outline" className="text-[11px]">{analysis.attackType}</Badge>
                         )}
                         {analysis.caseId && (
                           <Badge variant="outline" className="font-mono text-[10px]">
-                            {analysis.caseId.slice(0, 8)}…
+                            {analysis.caseId.slice(0, 10)}…
                           </Badge>
                         )}
                       </div>
                     </div>
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
+                      className="shrink-0 w-full sm:w-auto"
                       onClick={() => analysis.id && handleViewReport(analysis.id)}
                     >
                       View Report
