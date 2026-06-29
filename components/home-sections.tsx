@@ -12,6 +12,7 @@ import { useMotionReady } from "@/components/motion-ready-context"
 import { fadeIn, fadeUp, heroPanel, heroTitle, EASE_OUT_EXPO, pipelineAsideContainer, pipelineAsideItem, reducedMotionTransition } from "@/lib/motion-presets"
 import { cn } from "@/lib/utils"
 import {
+  ARCHITECTURE_AXES,
   CAPABILITIES,
   INFERENCE_DEFAULTS,
   BENTO_SMALL_TILES,
@@ -250,35 +251,60 @@ export function HomeArchitectureBento() {
         </Reveal>
 
         <RevealStagger
-          className="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4 auto-rows-fr"
+          className="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4"
           stagger={0.07}
         >
-          <RevealItem className="col-span-2 lg:col-span-3 lg:row-span-2 rounded-3xl border border-border/60 bg-card p-6 sm:p-8 flex flex-col">
+          <RevealItem className="col-span-2 lg:col-span-3 lg:row-span-2 rounded-3xl border border-border/60 bg-card p-4 sm:p-8 flex flex-col">
             <div className="flex-1">
-              <Badge variant="outline" className="mb-4 font-mono text-[10px]">
+              <Badge variant="outline" className="mb-3 font-mono text-[10px]">
                 Phase 9B · experimental
               </Badge>
-              <h3 className="text-2xl sm:text-3xl font-orbitron font-bold leading-snug">
+              <h3 className="text-xl sm:text-3xl font-orbitron font-bold leading-snug">
                 Four experimental evidence models
               </h3>
-              <p className="text-sm text-muted-foreground mt-4 leading-relaxed max-w-md">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-2 sm:mt-4 leading-relaxed max-w-md">
                 Origin (WavLM SSL), replay (acoustic), mixer/channel (acoustic), and partial segments (combined
                 features), fused into separate indicators, not one binary fake/real verdict.
               </p>
             </div>
-            <p className="text-xs font-mono text-primary mt-6">release/models/ · joblib + metadata</p>
+            <p className="text-xs font-mono text-primary mt-4 sm:mt-6">release/models/ · joblib + metadata</p>
           </RevealItem>
 
-          {BENTO_SMALL_TILES.map((tile) => (
+          {ARCHITECTURE_AXES.map((axis, i) => {
+            const colors = [
+              { border: "border-blue-500/40", bg: "bg-blue-500/8", badge: "bg-blue-500/15 text-blue-400 border-blue-500/30", dot: "bg-blue-400" },
+              { border: "border-emerald-500/40", bg: "bg-emerald-500/8", badge: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30", dot: "bg-emerald-400" },
+              { border: "border-violet-500/40", bg: "bg-violet-500/8", badge: "bg-violet-500/15 text-violet-400 border-violet-500/30", dot: "bg-violet-400" },
+              { border: "border-amber-500/40", bg: "bg-amber-500/8", badge: "bg-amber-500/15 text-amber-400 border-amber-500/30", dot: "bg-amber-400" },
+            ]
+            const c = colors[i % colors.length]
+            return (
+              <RevealItem
+                key={axis.model}
+                className={`col-span-1 rounded-2xl border ${c.border} ${c.bg} p-3 sm:p-4 flex flex-col gap-2`}
+              >
+                <div className="flex items-center justify-between gap-1">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${c.dot}`} />
+                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium truncate">{axis.label}</p>
+                  </div>
+                  <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full border ${c.badge} shrink-0`}>≥ {axis.threshold}</span>
+                </div>
+                <p className="text-xs sm:text-sm font-semibold leading-snug text-foreground">{axis.features}</p>
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground leading-tight">{axis.note}</p>
+              </RevealItem>
+            )
+          })}
+
+          {/* Segmentation + Output tiles */}
+          {BENTO_SMALL_TILES.slice(4).map((tile) => (
             <RevealItem
               key={tile.key}
-              className="col-span-1 rounded-2xl border border-border/60 bg-card p-4 sm:p-5 flex flex-col h-full"
+              className="col-span-1 rounded-2xl border border-border/60 bg-card p-3 sm:p-4 flex flex-col gap-1.5"
             >
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground leading-tight">{tile.label}</p>
-                <span className="text-[9px] font-mono text-primary/80 shrink-0">{tile.meta}</span>
-              </div>
-              <p className="text-sm font-mono font-semibold leading-snug flex-1">{tile.value}</p>
+              <p className="text-[9px] uppercase tracking-wider text-muted-foreground">{tile.label}</p>
+              <p className="text-xs sm:text-sm font-mono font-semibold leading-snug">{tile.value}</p>
+              <span className="text-[9px] font-mono text-primary/60">{tile.meta}</span>
             </RevealItem>
           ))}
 
