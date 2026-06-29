@@ -4,6 +4,7 @@ import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { Orbitron } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { ThemeProvider } from "next-themes"
 import { AuthProvider } from "@/lib/auth-context"
 import { AppContent } from "@/components/app-content"
 import { Suspense } from "react"
@@ -34,14 +35,16 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${orbitron.variable} antialiased`}>
-        <AuthProvider>
-          <Suspense fallback={<div>Loading...</div>}>
-            <AppContent>{children}</AppContent>
-            <Analytics />
-          </Suspense>
-        </AuthProvider>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange={false}>
+          <AuthProvider>
+            <Suspense fallback={<div>Loading...</div>}>
+              <AppContent>{children}</AppContent>
+              <Analytics />
+            </Suspense>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

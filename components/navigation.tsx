@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useTheme } from "next-themes"
 import { motion } from "motion/react"
+import { Moon, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-context"
 import { useMotionReady } from "@/components/motion-ready-context"
@@ -17,6 +19,28 @@ const HOME_NAV_LINKS = [
   { name: "Use cases", href: "/#use-cases" },
   { name: "Case studies", href: "/case-studies" },
 ]
+
+function ThemeToggle({ className }: { className?: string }) {
+  const { resolvedTheme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+  if (!mounted) return <div className={`w-9 h-9 ${className ?? ""}`} />
+  const isDark = resolvedTheme === "dark"
+  return (
+    <button
+      type="button"
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      className={`w-9 h-9 flex items-center justify-center rounded-full border border-border/50 bg-background/60 hover:bg-accent hover:border-primary/40 transition-all duration-300 ${className ?? ""}`}
+    >
+      {isDark ? (
+        <Sun className="w-4 h-4 text-primary" />
+      ) : (
+        <Moon className="w-4 h-4 text-primary" />
+      )}
+    </button>
+  )
+}
 
 export function Navigation() {
   const { user } = useAuth()
@@ -88,6 +112,7 @@ export function Navigation() {
             )}
 
             <div className="flex items-center gap-2 sm:gap-3">
+              <ThemeToggle />
               {showLoggedInNav ? (
                 <>
                   <Link href="/dashboard" className="hidden sm:block">
@@ -162,6 +187,10 @@ export function Navigation() {
                 </Link>
               ))}
               <div className={`flex flex-col gap-2 ${showHomeNavLinks ? "pt-3 mt-2 border-t border-border/30" : ""}`}>
+                <div className="flex items-center justify-between px-1 py-1.5">
+                  <span className="text-sm text-muted-foreground">Appearance</span>
+                  <ThemeToggle />
+                </div>
                 {showLoggedInNav ? (
                   <>
                     <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
