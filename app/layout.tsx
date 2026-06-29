@@ -21,6 +21,11 @@ export const metadata: Metadata = {
   description:
     "Upload audio for multi-axis deepfake screening: origin, replay, channel, and partial-segment evidence with experimental indicators only.",
   generator: "v0.app",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
 }
 
 export default function RootLayout({
