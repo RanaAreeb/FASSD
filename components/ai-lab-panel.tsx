@@ -17,9 +17,7 @@ export const AI_LAB_MIN_DURATION_SECONDS = 60
 
 const DEFAULT_AI_LAB_PROMPT = `This is a synthetic voice sample created for forensic screening and voice-integrity laboratory practice. I am generating this audio using text-to-speech so researchers can compare model behavior against known synthetic speech. The purpose is educational demonstration only, not legal proof of authenticity or deception. I will continue speaking at a natural conversational pace with clear articulation, steady volume, and neutral tone throughout this entire passage.
 
-Forensic audio screening looks for acoustic cues such as unnatural pauses, spectral artifacts, repeated phrasing, and boundary discontinuities where segments may have been edited or spliced together. Real human recordings often contain small breath sounds, slight pitch variation, and room ambience that synthetic systems may smooth or omit entirely. In a controlled lab setting, analysts may blend synthetic segments into human speech to simulate partial fabrication and test whether detection tools flag only the inserted region or mislabel the entire file.
-
-This sample is intentionally long so segment-level analysis has enough time windows to produce meaningful scores. Screening outputs remain probabilistic estimates and can be inconclusive when audio quality is poor, background noise is present, or the recording is heavily compressed. Always combine automated scores with careful manual listening, contextual review, and chain-of-custody documentation when handling sensitive material.`
+Forensic audio screening looks for acoustic cues such as unnatural pauses, spectral artifacts, repeated phrasing, and boundary discontinuities where segments may have been edited or spliced together. Real human recordings often contain small breath sounds, slight pitch variation, and room ambience that synthetic systems may smooth or omit entirely. In a controlled lab setting, analysts may blend synthetic segments into human speech to simulate partial fabrication and test whether detection tools flag only the inserted region or mislabel the entire file.`
 
 interface AiLabPanelProps {
   onFileReady: (file: File) => void
