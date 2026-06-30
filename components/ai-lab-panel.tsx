@@ -169,7 +169,7 @@ export function AiLabPanel({ onFileReady, disabled }: AiLabPanelProps) {
 
   return (
     <div className="space-y-5 text-left">
-      <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-xs text-muted-foreground leading-relaxed">
+      <div className="rounded-lg border border-amber-600/35 bg-amber-500/10 px-4 py-3 text-xs text-amber-950/80 dark:border-amber-500/30 dark:bg-amber-500/5 dark:text-muted-foreground leading-relaxed">
         Generate synthetic speech with Deepgram for lab testing only. Use a full paragraph (about one minute when read
         aloud). Results are screening estimates, not legal proof.
       </div>
@@ -280,8 +280,8 @@ export function AiLabPanel({ onFileReady, disabled }: AiLabPanelProps) {
         </Button>
       </div>
 
-      {status && <p className="text-xs text-primary/90">{status}</p>}
-      {error && <p className="text-xs text-red-300/90">{error}</p>}
+      {status && <p className="text-xs text-emerald-800 dark:text-primary/90">{status}</p>}
+      {error && <p className="text-xs text-red-700 dark:text-red-300/90">{error}</p>}
     </div>
   )
 }

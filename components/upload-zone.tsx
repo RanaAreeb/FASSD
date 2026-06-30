@@ -34,32 +34,40 @@ const SPECIMEN_TABS: {
     label: "Upload",
     shortLabel: "Upload file",
     icon: FileUp,
-    pill: "bg-sky-500/25 text-sky-200 border-sky-400/60 shadow-[0_0_12px_rgba(56,189,248,0.35)]",
-    panelAccent: "border-sky-500/30 bg-sky-500/5",
+    pill:
+      "bg-sky-500/15 text-sky-950 border-sky-600/45 shadow-sm " +
+      "dark:bg-sky-500/25 dark:text-sky-200 dark:border-sky-400/60 dark:shadow-[0_0_12px_rgba(56,189,248,0.35)]",
+    panelAccent: "border-sky-500/35 bg-sky-500/8 dark:border-sky-500/30 dark:bg-sky-500/5",
   },
   {
     value: "record",
     label: "Record",
     shortLabel: "Live recording",
     icon: Mic,
-    pill: "bg-emerald-500/25 text-emerald-200 border-emerald-400/60 shadow-[0_0_12px_rgba(52,211,153,0.35)]",
-    panelAccent: "border-emerald-500/30 bg-emerald-500/5",
+    pill:
+      "bg-emerald-500/15 text-emerald-950 border-emerald-600/45 shadow-sm " +
+      "dark:bg-emerald-500/25 dark:text-emerald-200 dark:border-emerald-400/60 dark:shadow-[0_0_12px_rgba(52,211,153,0.35)]",
+    panelAccent: "border-emerald-500/35 bg-emerald-500/8 dark:border-emerald-500/30 dark:bg-emerald-500/5",
   },
   {
     value: "samples",
     label: "Test clips",
     shortLabel: "Bundled samples",
     icon: TestTube2,
-    pill: "bg-violet-500/25 text-violet-200 border-violet-400/60 shadow-[0_0_12px_rgba(167,139,250,0.35)]",
-    panelAccent: "border-violet-500/30 bg-violet-500/5",
+    pill:
+      "bg-violet-500/15 text-violet-950 border-violet-600/45 shadow-sm " +
+      "dark:bg-violet-500/25 dark:text-violet-200 dark:border-violet-400/60 dark:shadow-[0_0_12px_rgba(167,139,250,0.35)]",
+    panelAccent: "border-violet-500/35 bg-violet-500/8 dark:border-violet-500/30 dark:bg-violet-500/5",
   },
   {
     value: "lab",
     label: "AI lab",
     shortLabel: "AI generation",
     icon: FlaskConical,
-    pill: "bg-amber-500/25 text-amber-200 border-amber-400/60 shadow-[0_0_12px_rgba(251,191,36,0.35)]",
-    panelAccent: "border-amber-500/30 bg-amber-500/5",
+    pill:
+      "bg-amber-500/15 text-amber-950 border-amber-600/45 shadow-sm " +
+      "dark:bg-amber-500/25 dark:text-amber-200 dark:border-amber-400/60 dark:shadow-[0_0_12px_rgba(251,191,36,0.35)]",
+    panelAccent: "border-amber-500/35 bg-amber-500/8 dark:border-amber-500/30 dark:bg-amber-500/5",
   },
 ]
 
@@ -243,7 +251,7 @@ export function UploadZone({ onFileUpload, isProcessing }: UploadZoneProps) {
         )}
 
         {uploadError && (
-          <p className="text-xs text-red-300/90 max-w-md mx-auto leading-relaxed">{uploadError}</p>
+          <p className="text-xs text-red-700 dark:text-red-300/90 max-w-md mx-auto leading-relaxed">{uploadError}</p>
         )}
       </div>
     </div>
