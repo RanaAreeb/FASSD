@@ -18,7 +18,7 @@ import {
   reload,
   type User,
 } from "firebase/auth"
-import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore"
+import { doc, setDoc, getDoc, updateDoc, type UpdateData } from "firebase/firestore"
 import { auth, db } from "./firebase"
 
 const isFirebaseReady = typeof auth !== "undefined" && !!auth && typeof db !== "undefined" && !!db
@@ -142,7 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateUserProfile = async (updates: Partial<UserProfile>) => {
     if (!isFirebaseReady || !user) return
-    await updateDoc(doc(db!, "users", user.uid), updates as Record<string, unknown>)
+    await updateDoc(doc(db!, "users", user.uid), updates as UpdateData<UserProfile>)
     setUserProfile((prev) => (prev ? { ...prev, ...updates } : null))
   }
 

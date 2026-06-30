@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { CheckCircle2, Mic, RefreshCw, ShieldAlert, Square } from "lucide-react"
-import { MIN_AUDIO_DURATION_SECONDS } from "@/lib/upload-limits"
+import { MIN_AUDIO_DURATION_SECONDS, measureAudioActivity, validateRecordingSpeech } from "@/lib/upload-limits"
 import { blobToWavFile } from "@/lib/audio-mixer"
 import {
   buildMicAccessError,
@@ -153,6 +153,20 @@ export function AudioRecorder({ onRecorded, disabled }: AudioRecorderProps) {
           }
           try {
             const wavFile = await blobToWavFile(blob, `recording_${Date.now()}.wav`)
+            const activity = await measureAudioActivity(wavFile)
+            if (!activity) {
+              setError("Could not verify your recording. Try again or upload a WAV/MP3 file.")
+              setSeconds(0)
+              secondsRef.current = 0
+              return
+            }
+            const speechError = validateRecordingSpeech(activity)
+            if (speechError) {
+              setError(speechError)
+              setSeconds(0)
+              secondsRef.current = 0
+              return
+            }
             onRecorded(wavFile)
             setSeconds(0)
             secondsRef.current = 0
@@ -346,7 +360,7 @@ export function AudioRecorder({ onRecorded, disabled }: AudioRecorderProps) {
         </p>
       )}
 
-      {error && <p className="text-xs text-red-300/90">{error}</p>}
+      {error && <p className="text-xs text-red-700 dark:text-red-300/90">{error}</p>}
 
       {accessError && (
         <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-4 space-y-3">
