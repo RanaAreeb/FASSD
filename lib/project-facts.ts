@@ -5,7 +5,7 @@ export const PROJECT = {
   logoMark: "DFD",
   namePrimary: "DeepFake",
   nameAccent: "Detection",
-  fullName: "DeepFake Detection: AI-powered synthetic speech screening",
+  fullName: "DeepFakeDetection: voice integrity screening for synthetic speech",
   domain: "deepfakedetection.dev",
   tagline:
     "Multi-axis voice integrity checks (origin, replay, channel, and partial segments) with experimental evidence indicators only.",
@@ -172,7 +172,7 @@ export const USE_CASES = [
     icon: "security" as const,
   },
   {
-    title: "Research & FYP",
+    title: "Research & evaluation",
     description: "Reproduce Phase 9 release runs via CLI or API and compare axis outputs in JSON reports.",
     icon: "research" as const,
   },

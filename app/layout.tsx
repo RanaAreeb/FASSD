@@ -18,14 +18,25 @@ const orbitron = Orbitron({
 })
 
 export const metadata: Metadata = {
-  title: PROJECT.fullName,
+  title: {
+    default: "DeepFakeDetection: Voice integrity screening",
+    template: `%s · ${PROJECT.name}`,
+  },
   description:
-    "Upload audio for multi-axis deepfake screening: origin, replay, channel, and partial-segment evidence with experimental indicators only.",
-  generator: "v0.app",
+    "Cloud voice integrity platform for synthetic speech screening. Multi-axis evidence for AI origin, replay, channel processing, and partial fabrication, with a live analysis demo.",
+  metadataBase: new URL(`https://www.${PROJECT.domain}`),
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
     apple: "/favicon.ico",
+  },
+  openGraph: {
+    title: "DeepFakeDetection: Voice integrity screening",
+    description:
+      "Screen audio for synthetic speech across four forensic evidence axes. Live demo at deepfakedetection.dev.",
+    url: `https://www.${PROJECT.domain}`,
+    siteName: PROJECT.name,
+    type: "website",
   },
 }
 

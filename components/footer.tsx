@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { PROJECT } from "@/lib/project-facts"
+import { COMPANY } from "@/lib/company"
 
 export function Footer() {
   return (
@@ -18,18 +19,20 @@ export function Footer() {
                 <span className="text-primary">{PROJECT.nameAccent}</span>
               </span>
             </Link>
-            <p className="text-muted-foreground text-sm leading-relaxed max-w-sm">
-              AI-powered synthetic speech screening with four separate integrity checks. Phase 9 release backend and
-              a Next.js + FastAPI demo stack.
+            <p className="text-muted-foreground text-sm leading-relaxed max-w-sm">{COMPANY.oneLiner}</p>
+            <p className="text-sm">
+              <a href={`mailto:${COMPANY.contactEmail}`} className="text-primary hover:underline font-mono text-xs">
+                {COMPANY.contactEmail}
+              </a>
             </p>
           </div>
 
-          <div className="md:col-span-3 space-y-3">
+          <div className="md:col-span-2 space-y-3">
             <h3 className="font-semibold text-sm">Product</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link href="/dashboard" className="hover:text-primary transition-colors">
-                  Analysis lab
+                  Live demo
                 </Link>
               </li>
               <li>
@@ -43,9 +46,25 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/#features" className="hover:text-primary transition-colors">
-                  Features
+                <Link href="/case-studies" className="hover:text-primary transition-colors">
+                  Case studies
                 </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div className="md:col-span-2 space-y-3">
+            <h3 className="font-semibold text-sm">Company</h3>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li>
+                <Link href="/about" className="hover:text-primary transition-colors">
+                  About
+                </Link>
+              </li>
+              <li>
+                <a href={`mailto:${COMPANY.contactEmail}`} className="hover:text-primary transition-colors">
+                  Contact
+                </a>
               </li>
               <li>
                 <Link href="/signin" className="hover:text-primary transition-colors">
@@ -55,32 +74,31 @@ export function Footer() {
             </ul>
           </div>
 
-          <div className="md:col-span-4 space-y-3">
-            <h3 className="font-semibold text-sm">Platform</h3>
+          <div className="md:col-span-3 space-y-3">
+            <h3 className="font-semibold text-sm">Legal</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <a
-                  href={`https://${PROJECT.domain}`}
-                  className="hover:text-primary transition-colors"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {PROJECT.domain}
-                </a>
+                <Link href="/privacy" className="hover:text-primary transition-colors">
+                  Privacy Policy
+                </Link>
               </li>
-              <li>Phase 9 release inference API</li>
-              <li>Multi-axis evidence · manual review recommended</li>
+              <li>
+                <Link href="/terms" className="hover:text-primary transition-colors">
+                  Terms of Use
+                </Link>
+              </li>
+              <li className="text-xs leading-relaxed pt-1">
+                Screening estimates only, not legal or forensic certification.
+              </li>
             </ul>
           </div>
         </div>
 
         <div className="mt-10 pt-6 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground">
           <p>
-            © {new Date().getFullYear()} {PROJECT.name} · {PROJECT.fullName}
+            © {new Date().getFullYear()} {COMPANY.legalName} · {COMPANY.domain}
           </p>
-          <p className="text-xs text-center sm:text-right max-w-md">
-            Model outputs are screening estimates, not legal or forensic certification.
-          </p>
+          <p className="text-xs text-center sm:text-right max-w-md">{COMPANY.researchOrigin}</p>
         </div>
       </div>
     </footer>

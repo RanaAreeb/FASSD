@@ -13,11 +13,11 @@ import { EASE_OUT_EXPO } from "@/lib/motion-presets"
 import { PROJECT } from "@/lib/project-facts"
 
 const HOME_NAV_LINKS = [
+  { name: "Product", href: "/#product" },
   { name: "Architecture", href: "/#architecture" },
-  { name: "Pipeline", href: "/#pipeline" },
-  { name: "Features", href: "/#features" },
   { name: "Use cases", href: "/#use-cases" },
   { name: "Case studies", href: "/case-studies" },
+  { name: "About", href: "/about" },
 ]
 
 function ThemeToggle({ className }: { className?: string }) {

@@ -4,11 +4,11 @@ import { Footer } from "@/components/footer"
 import { ClientWrapper } from "@/components/client-wrapper"
 import {
   HomeHero,
-  HomeIntroSection,
-  HomeArchitectureBento,
+  HomeProductSection,
+  HomeArchitectureSection,
   HomePipelineSection,
-  HomeCapabilitiesSection,
   HomeUseCasesSection,
+  HomeOriginSection,
   HomeCtaSection,
 } from "@/components/home-sections"
 
@@ -17,11 +17,11 @@ export default function HomePage() {
     <ClientWrapper>
       <main className="min-h-screen overflow-x-hidden bg-background">
         <HomeHero />
-        <HomeIntroSection />
-        <HomeArchitectureBento />
+        <HomeProductSection />
+        <HomeArchitectureSection />
         <HomePipelineSection />
-        <HomeCapabilitiesSection />
         <HomeUseCasesSection />
+        <HomeOriginSection />
         <HomeCtaSection />
         <Footer />
       </main>
